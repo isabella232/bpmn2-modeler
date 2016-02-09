@@ -459,9 +459,6 @@ public class ModelExtensionDescriptor extends BaseRuntimeExtensionDescriptor {
 		return object;
 	}
 
-	// FIXME: this is called in CreateCustomShapeFeature and CreateCustomConnectionFeature
-	// this should not be necessary because it's already done in the Bpmn2Modeler factory,
-	// but check to make sure. Try to decouple!
 	private void populateObject(EObject object, boolean initialize) {
 		try {
 			modelObject = object;
