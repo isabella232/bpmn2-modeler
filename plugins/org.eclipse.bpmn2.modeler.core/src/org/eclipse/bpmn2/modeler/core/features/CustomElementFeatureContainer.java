@@ -218,6 +218,17 @@ public class CustomElementFeatureContainer implements ICustomElementFeatureConta
 		return (String)id;
 	}
 
+	public static String findId(EObject eObject) {
+		TargetRuntime rt = TargetRuntime.getRuntime(eObject);
+		for (CustomTaskDescriptor ctd : rt.getCustomTaskDescriptors()) {
+			String id = ctd.getFeatureContainer().getId(eObject);
+			if (ctd.getId().equals(id)) {
+				return id;
+			}
+		}
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.bpmn2.modeler.core.features.ICustomElementFeatureContainer#getId(org.eclipse.emf.ecore.EObject)
 	 */

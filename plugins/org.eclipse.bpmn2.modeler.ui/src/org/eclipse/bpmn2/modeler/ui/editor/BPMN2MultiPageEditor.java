@@ -24,6 +24,7 @@ import org.eclipse.bpmn2.modeler.ui.Bpmn2DiagramEditorInput;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Listener;
@@ -106,7 +107,15 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 			}
     	});
     }
-
+	
+	@Override
+	public Object getAdapter(Class required) {
+		if (required==DiagramEditor.class) {
+			return designEditor;
+		}
+		return super.getAdapter(required);
+	}
+	
     /**
      * Method declared on IEditorPart.
      * 

@@ -48,7 +48,6 @@ import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.IntObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.NCNameObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextObjectEditor;
-import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
@@ -58,8 +57,6 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.graphiti.features.context.impl.AddContext;
-import org.eclipse.graphiti.features.context.impl.AreaContext;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -109,34 +106,36 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	 */
 	protected void createInputParameterBindings(final Task task) {
 		
-		// this may no longer be required since populateObject() is now called
-		// in Bpmn2ModelerFactory.create(). See https://issues.jboss.org/browse/SWITCHYARD-2484
-		// for details.
+		// Get the Model Extension Descriptor for this Custom Task.
+		// This will contain the Data Inputs and Outputs that were
+		// defined for the Custom Task either in the plugin.xml
+		// or by way of Work Item Definition files contained in
+		// the project or the project's classpath.
 		ModelExtensionDescriptor med = null;
 		ExtendedPropertiesAdapter<?> adapter = ExtendedPropertiesAdapter.adapt(task);
-		if (adapter==null) {
-			AddContext context = new AddContext(new AreaContext(), task);
-			String id = CustomElementFeatureContainer.getId(context);
+		if (adapter!=null) {
+			// look for it in the property adapter first
+			med = adapter.getProperty(ModelExtensionDescriptor.class);
+		}
+
+		if (med==null) {
+			// not found? get the Custom Task ID from the Task object
+			String id = CustomElementFeatureContainer.findId(task);
 			if (id!=null) {
+				// and look it up in the Target Runtime's list of
+				// Custom Task Descriptors
 		    	TargetRuntime rt = TargetRuntime.getRuntime(task);
-		    	CustomTaskDescriptor ctd = rt.getCustomTask(id);
-		    	ctd.populateObject(task, task.eResource(), true);
-		    	adapter = ExtendedPropertiesAdapter.adapt(task);
+		    	med = rt.getCustomTask(id);
 			}
 		}
 		
-		if (adapter!=null) {
-			med = adapter.getProperty(ModelExtensionDescriptor.class);
-		}
-		
 		if (med!=null) {
-			// This Task object has <modelExtension> properties defined in the plugin.xml
-			// check if any of the <property> elements extend the DataInputs or DataOutputs
+			// This Task object has additional properties defined either by way of the
+			// <modelExtension> defined in the plugin.xml or in Work Item Definitions.
+			// Check if any of the extension properties extend the DataInputs or DataOutputs
 			// (i.e. the I/O Parameter mappings) and create Object Editors for them.
 			// If the Task does not define these parameter mappings, create temporary objects
 			// for the editors (these will go away if they are not touched by the user)
-//			List<Property> props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
-			
 			List<Property> props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
 			InputOutputSpecification ioSpec = task.getIoSpecification();
 			if (ioSpec==null) {

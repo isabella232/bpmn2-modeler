@@ -31,8 +31,6 @@ import org.eclipse.bpmn2.modeler.core.utils.SimpleTreeIterator;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.emf.common.notify.Adapter;
-import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
@@ -45,7 +43,6 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.core.runtime.Assert;
 
 /**
  * Target Runtime Extension Descriptor class for BPMN2 model extension attributes and elements.
@@ -745,7 +742,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeExtensionDescriptor {
 		if (adapter!=null) {
 			// See https://issues.jboss.org/browse/SWITCHYARD-2484
 			adapter.setResource(resource);
-			adapter.setProperty(this.getClass(), this);
+			adapter.setProperty(ModelExtensionDescriptor.class, this);
 			if (description!=null)
 				adapter.setProperty(ExtendedPropertiesAdapter.LONG_DESCRIPTION, description);
 		}

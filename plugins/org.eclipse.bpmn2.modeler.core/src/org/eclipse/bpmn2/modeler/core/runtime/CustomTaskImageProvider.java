@@ -17,10 +17,17 @@ import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolDescript
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.internal.GraphitiUIPlugin;
 import org.eclipse.graphiti.ui.services.GraphitiUi;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * Image provider class for our Custom Task extensions.
@@ -122,9 +129,41 @@ public class CustomTaskImageProvider {
 		// remove the "missing image" icon that may have been registered
 		// previously if an icon was not available.
 		if (imageRegistry.get(imageId)!=null) {
+			if (editorInstances()>1) {
+				// See https://bugs.eclipse.org/bugs/show_bug.cgi?id=487503
+				// if there is more than one editor currently open, we can
+				// not dispose the image and replace it with the new one
+				// as this will cause an SWT Image Disposed exception.
+				// This means that the user must close all editor instances
+				// before any change to the icon referenced by Work Item
+				// Definitions will take effect.
+				return;
+			}
 			imageRegistry.remove(imageId);
 		}
 		imageRegistry.put(imageId, image);
+	}
+	
+	/**
+	 * Count the number of BPMN2 editor instances currently open
+	 * 
+	 * @return number of open editor instances
+	 */
+	private static int editorInstances() {
+		int count = 0;
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        for ( IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
+        	IWorkbenchPage page = window.getActivePage();
+            for (IEditorReference ref : page.getEditorReferences()) {
+                IEditorPart part = ref.getEditor(false);
+                if (part != null) {
+                	if (part.getAdapter(DiagramEditor.class)!=null)
+                		++count;
+                }
+            }
+        }
+
+		return count;
 	}
 	
 	public static Image createImage(TargetRuntime rt, GraphicsAlgorithmContainer ga, String icon, IconSize size) {
