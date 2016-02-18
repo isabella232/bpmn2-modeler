@@ -44,8 +44,8 @@ public class ServiceTaskPropertiesAdapter extends TaskPropertiesAdapter<ServiceT
 		super(adapterFactory, object);
     	EStructuralFeature feature = Bpmn2Package.eINSTANCE.getServiceTask_OperationRef();
 
-    	setProperty(feature, UI_CAN_CREATE_NEW, Boolean.FALSE);
-    	setProperty(feature, UI_CAN_EDIT, Boolean.FALSE);
+    	setProperty(feature, UI_CAN_CREATE_NEW, Boolean.TRUE);
+    	setProperty(feature, UI_CAN_EDIT, Boolean.TRUE);
 		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
 
 		setFeatureDescriptor(feature, new OperationRefFeatureDescriptor<ServiceTask>(this,object,feature) {
