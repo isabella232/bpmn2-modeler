@@ -31,7 +31,7 @@
 	<properties>
 		<tycho-version>0.21.0</tycho-version>
 		<tycho-extras-version>${tycho-version}</tycho-extras-version>
-		<BUILD_ALIAS>CR2</BUILD_ALIAS>
+		<BUILD_ALIAS>Final</BUILD_ALIAS>
 	</properties>
 
 	<profiles>
@@ -273,7 +273,7 @@
 				<artifactId>tycho-packaging-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
-					<format>'${BUILD_ALIAS}-v'yyyyMMdd-HHmm</format>
+					<format>'${BUILD_ALIAS}-v'yyyyMMdd-HHmm'-B212'</format>
 				</configuration>
 			</plugin>
 			
