@@ -881,8 +881,7 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 		   source, 
 		   new String[] {
 			 "kind", "attribute",
-			 "name", "name",
-			 "namespace", "##targetNamespace"
+			 "name", "name"
 		   });	
 		addAnnotation
 		  (getMetaDataType_MetaValue(), 
