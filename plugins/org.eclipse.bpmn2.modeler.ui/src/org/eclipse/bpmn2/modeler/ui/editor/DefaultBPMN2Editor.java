@@ -13,6 +13,9 @@
 package org.eclipse.bpmn2.modeler.ui.editor;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Definitions;
@@ -21,7 +24,6 @@ import org.eclipse.bpmn2.modeler.core.LifecycleEvent;
 import org.eclipse.bpmn2.modeler.core.LifecycleEvent.EventType;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
-import org.eclipse.bpmn2.modeler.core.features.IBpmn2FeatureProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.Bpmn2TabbedPropertySheetPage;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
 import org.eclipse.bpmn2.modeler.core.model.ModelHandler;
@@ -90,6 +92,8 @@ import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.editor.GFPaletteRoot;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -634,9 +638,35 @@ public class DefaultBPMN2Editor extends DiagramEditor implements IPreferenceChan
 
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		// Filter out label shapes as these are controlled by their ContainerShape owners
+		// For example a "Select All" key action would select Labels as well.
+		Iterator iter = ((IStructuredSelection)selection).iterator();
+		List<Object> filteredObjects = new ArrayList<Object>();
+		List<PictogramElement> pictogramElements = new ArrayList<PictogramElement>();
+		while (iter.hasNext()) {
+			boolean addIt = true;
+			Object o = iter.next();
+			if (o instanceof EditPart) {
+				Object model = ((EditPart)o).getModel();
+				if (model instanceof PictogramElement) {
+					if (FeatureSupport.isLabelShape((PictogramElement)model)) {
+						addIt = false;
+					}
+					else {
+						pictogramElements.add((PictogramElement)model);
+					}
+				}
+			}
+			if (addIt)
+				filteredObjects.add(o);
+		}
+		IStructuredSelection filteredSelection = new StructuredSelection(filteredObjects);
+
 		// Graphiti understands multipage editors
-		super.selectionChanged(part,selection); // Graphiti's DiagramEditorInternal
 		// but apparently GEF doesn't
+		super.selectionChanged(part,filteredSelection); // Graphiti's DiagramEditorInternal
+		super.selectPictogramElements(pictogramElements.toArray(new PictogramElement[pictogramElements.size()]));
+		
 		updateActions(getSelectionActions()); // usually done in GEF's GraphicalEditor
 
 		// if the selected element is obscured by another shape
