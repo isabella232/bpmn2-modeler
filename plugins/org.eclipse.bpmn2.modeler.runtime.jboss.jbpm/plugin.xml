@@ -517,6 +517,12 @@
 			type="org.eclipse.bpmn2.IntermediateThrowEvent"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmIntermediateThrowEventFeatureContainer">
 		</featureContainer>
+				
+		<featureContainer
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.BoundaryEvent"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmBoundaryEventFeatureContainer">
+		</featureContainer>
 		
 <!-- BPMN Model Element Extensions -->
 		
