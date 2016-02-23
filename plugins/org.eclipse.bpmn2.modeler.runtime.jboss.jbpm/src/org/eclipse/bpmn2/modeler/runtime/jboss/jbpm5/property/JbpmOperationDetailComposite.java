@@ -58,7 +58,7 @@ public class JbpmOperationDetailComposite extends DefaultDetailComposite {
 				EReference implementationRef = PACKAGE.getInterface_ImplementationRef();
 				Composite parent = getAttributesParent();
 				
-				String displayName = "Interface"; ExtendedPropertiesProvider.getLabel(iface, name); //$NON-NLS-1$
+				String displayName = ExtendedPropertiesProvider.getLabel(iface, name);
 				ObjectEditor editor = new TextObjectEditor(this,iface,name);
 				editor.createControl(parent,displayName);
 	

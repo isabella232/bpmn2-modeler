@@ -21,6 +21,7 @@ import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.Operation;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -51,16 +52,26 @@ public class OperationPropertiesAdapter extends ExtendedPropertiesAdapter<Operat
 	public OperationPropertiesAdapter(AdapterFactory adapterFactory, Operation object) {
 		super(adapterFactory, object);
 
-		EStructuralFeature ref = Bpmn2Package.eINSTANCE.getOperation_ImplementationRef();
-    	setFeatureDescriptor(ref, new ImplementationRefFeatureDescriptor<Operation>(this, adapterFactory, object, ref));
+		EStructuralFeature feature = Bpmn2Package.eINSTANCE.getOperation_ImplementationRef();
+    	setFeatureDescriptor(feature, new ImplementationRefFeatureDescriptor<Operation>(this, adapterFactory, object, feature));
 
-    	ref = Bpmn2Package.eINSTANCE.getOperation_InMessageRef();
-    	setFeatureDescriptor(ref, new RootElementRefFeatureDescriptor<Operation>(this,object,ref));
-       	setProperty(ref, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	feature = Bpmn2Package.eINSTANCE.getOperation_Name();
+    	setFeatureDescriptor(feature, new FeatureDescriptor<Operation>(this,object, feature) {
+			
+			@Override
+			public String getLabel() {
+				return Messages.Operation_Name_Label;
+			}
 
-    	ref = Bpmn2Package.eINSTANCE.getOperation_OutMessageRef();
-       	setFeatureDescriptor(ref, new RootElementRefFeatureDescriptor<Operation>(this,object,ref));
-       	setProperty(ref, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	});
+    	
+    	feature = Bpmn2Package.eINSTANCE.getOperation_InMessageRef();
+    	setFeatureDescriptor(feature, new RootElementRefFeatureDescriptor<Operation>(this,object,feature));
+       	setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+
+    	feature = Bpmn2Package.eINSTANCE.getOperation_OutMessageRef();
+       	setFeatureDescriptor(feature, new RootElementRefFeatureDescriptor<Operation>(this,object,feature));
+       	setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
     	
     	setObjectDescriptor( new ObjectDescriptor<Operation>(this,object) {
 

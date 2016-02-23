@@ -383,7 +383,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 			}
 			else if (obj instanceof Exception) {
 				String message = ((Exception)obj).getMessage();
-				return this.message.equals(message);
+				return message.equals(this.message);
 			}
 			return super.equals(obj);
 		}
