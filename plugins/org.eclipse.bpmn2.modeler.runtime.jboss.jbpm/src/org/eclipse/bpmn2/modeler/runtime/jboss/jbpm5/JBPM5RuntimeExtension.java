@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Event;
@@ -75,7 +76,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.impl.EAttributeImpl;
+import org.eclipse.emf.ecore.util.BasicFeatureMap;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
@@ -103,6 +108,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 		return parser.getResult();
 	}
 
+	@Override
 	public String getTargetNamespace(Bpmn2DiagramType diagramType){
 		return DROOLS_NAMESPACE;
 	}
@@ -224,6 +230,28 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 			}
 			else if (MetaDataTypeAdapter.appliesTo(object)) {
 				MetaDataTypeAdapter.adapt(object);
+			}
+		}
+		else if (event.eventType == EventType.BUSINESSOBJECT_LOADED ||
+				event.eventType == EventType.BUSINESSOBJECT_INITIALIZED) {
+			EObject object = (EObject) event.target;
+			if (object instanceof GlobalType) {
+				// The BaseElement feature "id" is not saved, but it MUST be kept in sync with the
+				// GlobalType feature "identifier" - this acts like the "name" feature of other
+				// ItemAwareElements that treat "name" like an ID.
+				// @see ProcessVariableNameChangeAdapter for details of how these are kept in sync.
+				((GlobalType) object).setId(((GlobalType) object).getIdentifier());
+			}
+			else if (ProcessVariableNameChangeAdapter.appliesTo(object)) {
+				EStructuralFeature nameFeature = object.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
+				String n = (String) object.eGet(nameFeature);
+				if (n==null || n.isEmpty()) {
+					EStructuralFeature idFeature = object.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
+					object.eSet(nameFeature, object.eGet(idFeature));
+				}
+			}
+			else if (ElementNameChangeAdapter.appliesTo(object)) {
+				ElementNameChangeAdapter.adapt(object);
 			}
 		}
 	}
@@ -413,35 +441,6 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 			Property prop = getPropertyFromWID(basicProps[i], wid);
 			if (prop!=null)
 				ct.getProperties().add(prop);
-		}
-	}
-
-	/*
-	 * Class: Visits each file in the project looking for the icon
-	 * @author bfitzpat
-	 *
-	 */
-	private class IconResourceVisitor implements IResourceVisitor {
-		
-		private ArrayList<IResource> iconResources = new ArrayList<IResource>();
-		private String iconName;
-		
-		public IconResourceVisitor ( String iconName ) {
-			this.iconName = iconName;
-		}
-		
-		public boolean visit (IResource resource) throws CoreException {
-			if (resource.getType() == IResource.FILE) {
-				if (((IFile)resource).getName().equalsIgnoreCase(iconName)) {
-					iconResources.add(resource);
-					return true;
-				}
-			}
-			return true;
-		}
-		
-		public ArrayList<IResource> getIconResources() {
-			return iconResources;
 		}
 	}
 }

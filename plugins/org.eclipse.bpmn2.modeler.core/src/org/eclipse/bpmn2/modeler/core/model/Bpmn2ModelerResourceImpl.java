@@ -48,6 +48,8 @@ import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.LifecycleEvent;
+import org.eclipse.bpmn2.modeler.core.LifecycleEvent.EventType;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.IExtensionValueAdapter;
 import org.eclipse.bpmn2.modeler.core.features.GraphitiConstants;
@@ -910,6 +912,8 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
    				}
             }
             super.endElement(uri, localName, name);
+			TargetRuntime rt = TargetRuntime.getRuntime(xmlResource);
+    		LifecycleEvent.notify(new LifecycleEvent(EventType.BUSINESSOBJECT_LOADED, peekObject, rt));
         }
 	}
 	

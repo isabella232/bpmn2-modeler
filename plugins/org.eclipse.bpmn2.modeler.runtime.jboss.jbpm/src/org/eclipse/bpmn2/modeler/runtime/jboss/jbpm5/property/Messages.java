@@ -14,6 +14,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.messages"; //$NON-NLS-1$
+	public static String JbpmActivityDetailComposite_Is_Async;
 	public static String JbpmActivityDetailComposite_On_Entry_Script;
 	public static String JbpmActivityDetailComposite_On_Exit_Script;
 	public static String JbpmActivityDetailComposite_Script_Details;

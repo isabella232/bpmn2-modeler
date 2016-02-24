@@ -13,12 +13,18 @@
 
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5;
 
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.adapters.IExtensionValueAdapter;
+import org.eclipse.bpmn2.modeler.core.model.ModelDecorator;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.MetaDataType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.MetaValueType;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 
 public class MetaDataTypeAdapter extends AdapterImpl implements IExtensionValueAdapter {
 	
@@ -56,5 +62,43 @@ public class MetaDataTypeAdapter extends AdapterImpl implements IExtensionValueA
 	@Override
 	public boolean shouldSaveFeature(EObject o, EStructuralFeature f) {
 		return true;
+	}
+
+	public static String getMetaData(BaseElement element, String name) {
+		for (MetaDataType metaData : ModelDecorator.getAllExtensionAttributeValues(element, MetaDataType.class)) {
+			if (name.equals(metaData.getName())) {
+				MetaValueType metaValue = metaData.getMetaValue();
+				if (metaValue!=null) {
+					return metaValue.getValue();
+				}
+			}
+		}
+		return null;
+	}
+
+	public static MetaDataType setMetaData(BaseElement element, String name, String value) {
+		for (MetaDataType metaData : ModelDecorator.getAllExtensionAttributeValues(element, MetaDataType.class)) {
+			if (name.equals(metaData.getName())) {
+				if (value!=null) {
+					MetaValueType metaValue = metaData.getMetaValue();
+					if (metaValue==null) {
+						metaValue = DroolsFactory.eINSTANCE.createMetaValueType();
+					}
+					metaValue.setValue(value);
+					metaData.setMetaValue(metaValue);
+				}
+				return metaData;
+			}
+		}
+		
+		MetaDataType metaData = DroolsFactory.eINSTANCE.createMetaDataType();
+		metaData.setName(name);
+		MetaValueType metaValue = DroolsFactory.eINSTANCE.createMetaValueType();
+		metaValue.setValue(value);
+		metaData.setMetaValue(metaValue);
+		Resource resource = element.eResource();
+		ModelDecorator.addExtensionAttributeValue(resource, element,
+				DroolsPackage.eINSTANCE.getDocumentRoot_MetaData(), metaData);
+		return metaData;
 	}
 }

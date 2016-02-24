@@ -21,7 +21,10 @@ import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.BooleanObjectEditor;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.model.ModelDecorator;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.MetaDataTypeAdapter;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.OnEntryScriptType;
@@ -31,9 +34,12 @@ import org.eclipse.bpmn2.modeler.ui.property.tasks.ActivityDetailComposite;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.ecore.util.FeatureMap.Entry;
+import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Section;
@@ -70,9 +76,59 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 	@Override
 	public void createBindings(EObject be) {
 		super.createBindings(be);
+		if (be instanceof Activity) {
+			ObjectEditor editor = new MetaDataValueBooleanEditor(this,(Activity)be);
+			editor.createControl(getAttributesParent(),Messages.JbpmActivityDetailComposite_Is_Async);
+		}
 		bindEntryExitScripts(be);
 	}
+
+	class MetaDataValueBooleanEditor extends BooleanObjectEditor {
+
+		Activity activity;
+		
+		public MetaDataValueBooleanEditor(AbstractDetailComposite parent, Activity activity) {
+			super(parent, activity, null);
+			this.activity = activity;
+		}
+
+		@Override
+		public Boolean getValue() {
+			String value = MetaDataTypeAdapter.getMetaData(activity, "customAsync"); //$NON-NLS-1$
+			return Boolean.valueOf(value);
+		}
+		
+		@Override
+		public boolean setValue(final Object result) {
+			if (result instanceof Boolean) {
+				final Boolean b = (Boolean) result;
+				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+				if (domain!=null) {
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							MetaDataTypeAdapter.setMetaData(activity, "customAsync", b.toString().toLowerCase()); //$NON-NLS-1$
+						}
+					});
+				}
+			}
+			return true;
+		}
+		
+	}
 	
+	protected void bindReference(Composite parent, EObject object, EReference reference) {
+		if ("loopCharacteristics".equals(reference.getName())) { //$NON-NLS-1$
+			if (!isModelObjectEnabled(object.eClass(), reference))
+				return;
+			super.bindReference(parent, object, reference);
+			addStandardLoopButton.setVisible(false);
+			
+		}
+		else
+			super.bindReference(parent, object, reference);
+	}
+
 	protected void bindEntryExitScripts(EObject be) {
 //		onEntryScriptTable = new ScriptTableComposite(this);
 //		onEntryScriptTable.bindList(be, DroolsPackage.eINSTANCE.getDocumentRoot_OnEntryScript());

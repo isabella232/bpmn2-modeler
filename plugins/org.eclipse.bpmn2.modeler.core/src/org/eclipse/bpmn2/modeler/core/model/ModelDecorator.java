@@ -1249,8 +1249,15 @@ public class ModelDecorator {
 		EList<EObject> list = (EList<EObject>)object.eGet(evf);
 		
 		if (list.size()==0) {
-			ExtensionAttributeValue newItem = Bpmn2ModelerFactory.create(resource, ExtensionAttributeValue.class);
-			ModelUtil.setID(newItem);
+			ExtensionAttributeValue newItem = null;
+			if (resource!=null) {
+				newItem = Bpmn2ModelerFactory.create(resource, ExtensionAttributeValue.class);
+			}
+			else {
+				newItem = Bpmn2ModelerFactory.eINSTANCE.createExtensionAttributeValue();
+				ModelUtil.setID(newItem);
+			}
+			
 			FeatureMap map = newItem.getValue();
 			map.add(feature, value);
 			if (delay) {

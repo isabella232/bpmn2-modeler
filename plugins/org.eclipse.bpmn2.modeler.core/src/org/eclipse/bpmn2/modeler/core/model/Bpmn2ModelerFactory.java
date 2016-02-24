@@ -435,9 +435,11 @@ public class Bpmn2ModelerFactory extends Bpmn2FactoryImpl {
 
 	private static EClass getEClass(Resource resource, Class clazz) {
 		String nsURI = null;
-		TargetRuntime rt = TargetRuntimeAdapter.getTargetRuntime(resource);
-		if (rt!=null)
-			nsURI = rt.getRuntimeExtension().getTargetNamespace(null);
+		if (resource!=null) {
+			TargetRuntime rt = TargetRuntimeAdapter.getTargetRuntime(resource);
+			if (rt!=null)
+				nsURI = rt.getRuntimeExtension().getTargetNamespace(null);
+		}
 		EPackage pkg = ModelDecorator.getEPackage(nsURI);
 		EClassifier eClassifier = ModelDecorator.findEClassifier(pkg, clazz.getSimpleName());
 		if (eClassifier instanceof EClass) {

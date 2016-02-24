@@ -31,16 +31,4 @@ public class JbpmSubProcessDetailComposite extends JbpmActivityDetailComposite {
 	public JbpmSubProcessDetailComposite(Composite parent, int style) {
 		super(parent, style);
 	}
-
-	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if ("loopCharacteristics".equals(reference.getName())) { //$NON-NLS-1$
-			if (!isModelObjectEnabled(object.eClass(), reference))
-				return;
-			super.bindReference(parent, object, reference);
-			addStandardLoopButton.setVisible(false);
-			
-		}
-		else
-			super.bindReference(parent, object, reference);
-	}
 }

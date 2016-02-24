@@ -46,6 +46,11 @@ public class JbpmCustomTaskPropertySection extends JbpmTaskPropertySection imple
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean doReplaceTab(String id, IWorkbenchPart part, ISelection selection) {
+		return appliesTo(part, selection);
+	}
 
 	@Override
 	public EObject getBusinessObjectForSelection(ISelection selection) {

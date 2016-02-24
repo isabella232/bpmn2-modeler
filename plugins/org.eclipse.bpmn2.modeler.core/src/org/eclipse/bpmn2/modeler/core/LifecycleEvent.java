@@ -81,6 +81,18 @@ public class LifecycleEvent {
 		 */
 		BUSINESSOBJECT_CREATED,
 		/**
+		 * Sent by the BPMN2 Object Factory immediately after a business object
+		 * has been fully loaded. This event is similar to BUSINESSOBJECT_INITIALIZED
+		 * but is only sent during file loading.
+		 * <p>
+		 * This is a good place to do any additional BPMN2 model object
+		 * initialization, or hook adapters.
+		 * <p>
+		 * The {@code LifecycleEvent.target} field will contain the BPMN2 model
+		 * object instance.
+		 */
+		BUSINESSOBJECT_LOADED,
+		/**
 		 * Sent by the BPMN2 Create Feature immediately after a business object
 		 * has been created and initialized by the editor framework. Only create
 		 * actions from the user will trigger this event. This event will not be

@@ -1017,6 +1017,7 @@
 				id="org.jboss.runtime.jbpm5.Full"
 				profile="Full">
 			<disable object="all"/>
+			<enable object="Activity" feature="loopCharacteristics"/>
 			<enable object="AdHocSubProcess" feature="cancelRemainingInstances"/>
 			<enable object="AdHocSubProcess" feature="completionCondition"/>
 			<enable object="AdHocSubProcess" feature="flowElements"/>
@@ -1165,6 +1166,7 @@
 			<enable object="ManualTask" feature="extensionValues"/>
 			<enable object="ManualTask" feature="ioSpecification"/>
 			<enable object="ManualTask" feature="isForCompensation"/>
+			<enable object="ManualTask" feature="loopCharacteristics"/>
 			<enable object="ManualTask" feature="name"/>
 			<enable object="Message" feature="id"/>
 			<enable object="Message" feature="itemRef"/>
@@ -1206,6 +1208,7 @@
 			<enable object="ReceiveTask" feature="instantiate"/>
 			<enable object="ReceiveTask" feature="ioSpecification"/>
 			<enable object="ReceiveTask" feature="isForCompensation"/>
+			<enable object="ReceiveTask" feature="loopCharacteristics"/>
 			<enable object="ReceiveTask" feature="messageRef"/>
 			<enable object="ReceiveTask" feature="name"/>
 			<enable object="ReceiveTask" feature="operationRef"/>
@@ -1219,6 +1222,7 @@
 			<enable object="SendTask" feature="ioSpecification"/>
 			<enable object="SendTask" feature="implementation"/>
 			<enable object="SendTask" feature="isForCompensation"/>
+			<enable object="SendTask" feature="loopCharacteristics"/>
 			<enable object="SendTask" feature="messageRef"/>
 			<enable object="SendTask" feature="name"/>
 			<enable object="SendTask" feature="operationRef"/>
@@ -1232,6 +1236,7 @@
 			<enable object="ServiceTask" feature="ioSpecification"/>
 			<enable object="ServiceTask" feature="isForCompensation"/>
 			<enable object="ServiceTask" feature="implementation"/>
+			<enable object="ServiceTask" feature="loopCharacteristics"/>
 			<enable object="ServiceTask" feature="name"/>
 			<enable object="ServiceTask" feature="operationRef"/>
 			<enable object="Signal" feature="id"/>
@@ -1250,6 +1255,7 @@
 			<enable object="Task" feature="dataOutputAssociations"/>
 			<enable object="Task" feature="extensionValues"/>
 			<enable object="Task" feature="ioSpecification"/>
+			<enable object="Task" feature="loopCharacteristics"/>
 			<enable object="Task" feature="isForCompensation"/>
 			<enable object="Task" feature="name"/>
 			<enable object="TextAnnotation" feature="documentation"/>
@@ -1267,6 +1273,7 @@
 			<enable object="UserTask" feature="extensionValues"/>
 			<enable object="UserTask" feature="ioSpecification"/>
 			<enable object="UserTask" feature="isForCompensation"/>
+			<enable object="UserTask" feature="loopCharacteristics"/>
 			<enable object="UserTask" feature="name"/>
 			<enable object="UserTask" feature="resources"/>
 		</modelEnablement>
