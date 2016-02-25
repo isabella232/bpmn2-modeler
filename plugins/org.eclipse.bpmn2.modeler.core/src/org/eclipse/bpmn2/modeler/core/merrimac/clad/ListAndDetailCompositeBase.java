@@ -16,6 +16,7 @@ import java.util.List;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.merrimac.Bpmn2PropertyPageRedrawHandler;
 import org.eclipse.bpmn2.modeler.core.merrimac.DefaultBusinessObjectDelegate;
 import org.eclipse.bpmn2.modeler.core.merrimac.IBusinessObjectDelegate;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
@@ -48,8 +49,6 @@ import org.eclipse.emf.validation.service.ModelValidationService;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -152,43 +151,24 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 		return boDelegate;
 	}
 	
-	private boolean redrawing = false;
+	/**
+	 * This is no longer need since it has been replaced with the
+	 * redraw UIJob in Bpmn2PropertyPageRoot.
+	 * @deprecated
+	 */
 	public synchronized void redrawPageAsync() {
-		if (!redrawing) {
-			redrawing = true;
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					redrawPage();
-				}
-			});
-			redrawing = false;
-		}
+		redrawPage();
+	}
+	
+	protected synchronized boolean needsRedraw() {
+		return Bpmn2PropertyPageRedrawHandler.needsRedraw(this);
 	}
 	
 	public synchronized void redrawPage() {
-		if (!redrawing) {
-			redrawing = true;
-			Composite root = getParent();
-			while (!(root instanceof ScrolledComposite) && root.getParent()!=null) {
-				root = root.getParent();
-			}
-			if (root.getParent()!=null)
-				root = root.getParent();
-			root.setRedraw(false);
-			root.layout();
-			Point p = root.getSize();
-			p.x++;
-			p.y++;
-			root.setSize(p);
-			p.x--;
-			p.y--;
-			root.setSize(p);
-			root.setRedraw(true);
-			redrawing = false;
-		}
+		Bpmn2PropertyPageRedrawHandler.redraw(this);
 	}
 	
+	@Override
 	public void setVisible(boolean visible) {
 		if (getLayoutData() instanceof GridData) {
 			((GridData)getLayoutData()).exclude = !visible;
@@ -394,47 +374,49 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 		// run this in the UI thread
 		Display.getDefault().asyncExec( new Runnable() {
 			public void run() {
-				List<Control>kids = new ArrayList<Control>();
 				Composite parent = ListAndDetailCompositeBase.this;
-				try {
-					AbstractBpmn2PropertySection section = ListAndDetailCompositeBase.this.getPropertySection();
-					if (section!=null && section.getTabbedPropertySheetPage()!=null) {
-						parent = (Composite)section.getTabbedPropertySheetPage().getControl();
+				if (!parent.isDisposed()) {
+					List<Control>kids = new ArrayList<Control>();
+					try {
+						AbstractBpmn2PropertySection section = ListAndDetailCompositeBase.this.getPropertySection();
+						if (section!=null && section.getTabbedPropertySheetPage()!=null) {
+							parent = (Composite)section.getTabbedPropertySheetPage().getControl();
+						}
 					}
-				}
-				catch (Exception e) {
-					return;
-				}
-
-				boolean firstTime = true;
-				for (Notification n : notifications) {
-					if (getFilter().matches(n)) {
-						if (n.getFeature() instanceof EStructuralFeature) {
-//							EStructuralFeature f = (EStructuralFeature)n.getFeature();
-//							EClass ec = (EClass)f.eContainer();
-//							String et;
-//							switch (n.getEventType()){
-//							case Notification.SET: et = "SET"; break;
-//							case Notification.UNSET: et = "UNSET"; break;
-//							case Notification.ADD: et = "ADD"; break;
-//							case Notification.ADD_MANY: et = "ADD_MANY"; break;
-//							case Notification.REMOVE: et = "REMOVE"; break;
-//							case Notification.REMOVE_MANY: et = "REMOVE_MANY"; break;
-//							default: et = "UNKNOWN";
-//							}
-//							System.out.println("sending notification: "+
-//									ec.getEPackage().getName()+":"+ec.getName()+"."+f.getName()+"   "+et+" old="+n.getOldStringValue()+" new="+n.getNewStringValue());
-							if (firstTime) {
-								getAllChildWidgets(parent, kids);
-								firstTime = false;
-							}
-							for (Control c : kids) {
-								if (!c.isDisposed() && c.isVisible()) {
-									INotifyChangedListener listener = (INotifyChangedListener)c.getData(
-											IConstants.NOTIFY_CHANGE_LISTENER_KEY);
-									if (listener!=null) {
-//										System.out.println("    "+listener.getClass().getSimpleName());
-										listener.notifyChanged(n);
+					catch (Exception e) {
+						return;
+					}
+	
+					boolean firstTime = true;
+					for (Notification n : notifications) {
+						if (getFilter().matches(n)) {
+							if (n.getFeature() instanceof EStructuralFeature) {
+	//							EStructuralFeature f = (EStructuralFeature)n.getFeature();
+	//							EClass ec = (EClass)f.eContainer();
+	//							String et;
+	//							switch (n.getEventType()){
+	//							case Notification.SET: et = "SET"; break;
+	//							case Notification.UNSET: et = "UNSET"; break;
+	//							case Notification.ADD: et = "ADD"; break;
+	//							case Notification.ADD_MANY: et = "ADD_MANY"; break;
+	//							case Notification.REMOVE: et = "REMOVE"; break;
+	//							case Notification.REMOVE_MANY: et = "REMOVE_MANY"; break;
+	//							default: et = "UNKNOWN";
+	//							}
+	//							System.out.println("sending notification: "+
+	//									ec.getEPackage().getName()+":"+ec.getName()+"."+f.getName()+"   "+et+" old="+n.getOldStringValue()+" new="+n.getNewStringValue());
+								if (firstTime) {
+									getAllChildWidgets(parent, kids);
+									firstTime = false;
+								}
+								for (Control c : kids) {
+									if (!c.isDisposed() && c.isVisible()) {
+										INotifyChangedListener listener = (INotifyChangedListener)c.getData(
+												IConstants.NOTIFY_CHANGE_LISTENER_KEY);
+										if (listener!=null) {
+	//										System.out.println("    "+listener.getClass().getSimpleName());
+											listener.notifyChanged(n);
+										}
 									}
 								}
 							}

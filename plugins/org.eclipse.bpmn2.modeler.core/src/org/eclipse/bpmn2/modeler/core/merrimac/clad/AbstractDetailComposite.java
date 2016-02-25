@@ -128,9 +128,9 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 		cleanBindings();
 		if (businessObject != null) {
 			createBindings(businessObject);
-			if (isEmpty())
+			if (isEmpty()) {
 				createEmptyLabel(businessObject);
-			redrawPage();
+			}
 		}
 	}
 
@@ -630,34 +630,36 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 	}
 
 	public void refresh() {
-		Display.getDefault().asyncExec( new Runnable() {
-			public void run() {
+//		Display.getDefault().asyncExec( new Runnable() {
+//			public void run() {
 				List<Control>kids = new ArrayList<Control>();
 				Composite parent = AbstractDetailComposite.this;
-				try {
-					AbstractBpmn2PropertySection section = AbstractDetailComposite.this.getPropertySection();
-					if (section!=null && section.getTabbedPropertySheetPage()!=null) {
-						parent = (Composite)section.getTabbedPropertySheetPage().getControl();
-					}
-
-					// Send a notification to all listeners about this refresh event.
-					// This will cause all children to be refreshed when a property tab switch happens.
-					Notification n = new ENotificationImpl(null, -1, -1, 0, 0);
-					getAllChildWidgets(parent, kids);
-					for (Control c : kids) {
-						if (!c.isDisposed()) {
-							INotifyChangedListener listener = (INotifyChangedListener)c.getData(
-									IConstants.NOTIFY_CHANGE_LISTENER_KEY);
-							if (listener!=null) {
-								listener.notifyChanged(n);
+				if (!parent.isDisposed()) {
+					try {
+						AbstractBpmn2PropertySection section = AbstractDetailComposite.this.getPropertySection();
+						if (section!=null && section.getTabbedPropertySheetPage()!=null) {
+							parent = (Composite)section.getTabbedPropertySheetPage().getControl();
+						}
+						
+						// Send a notification to all listeners about this refresh event.
+						// This will cause all children to be refreshed when a property tab switch happens.
+						Notification n = new ENotificationImpl(null, -1, -1, 0, 0);
+						getAllChildWidgets(parent, kids);
+						for (Control c : kids) {
+							if (!c.isDisposed()) {
+								INotifyChangedListener listener = (INotifyChangedListener)c.getData(
+										IConstants.NOTIFY_CHANGE_LISTENER_KEY);
+								if (listener!=null) {
+									listener.notifyChanged(n);
+								}
 							}
 						}
 					}
+					catch (Exception e) {
+					}
 				}
-				catch (Exception e) {
-				}
-			}
-		});
+//			}
+//		});
 	}
 	
 	public void setPropertiesProvider(AbstractPropertiesProvider provider) {

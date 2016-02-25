@@ -421,24 +421,6 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 		return MapType.None;
 	}
-	
-	private void redrawParent() {
-		// this DetailComposite should be sitting in a SashForm created
-		// by a ListComposite. layout this thing first
-		layout();
-		// and then search for the DetailComposite that contains the list 
-		Composite parent = getParent();
-		while (parent!=null) {
-			parent = parent.getParent();
-			if (parent instanceof AbstractDetailComposite) {
-				((AbstractDetailComposite)parent).redrawPage();
-				break;
-			}
-		}
-        if (getTabbedPropertySheetPage() != null) {
-            getTabbedPropertySheetPage().resizeScrolledComposite();
-        }
-	}
 
 	private void updateWidgets() {
 		if (association!=null && !updatingWidgets) {
@@ -565,7 +547,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 						showAssignmentsWidgets(false);
 
 						showPropertyWidgets(true);
-						redrawParent();
+						redrawPage();
 					}
 				}
 			});
@@ -584,7 +566,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 						showAssignmentsWidgets(false);
 
 						showTransformationWidgets(true);
-						redrawParent();
+						redrawPage();
 					}
 				}
 			});
@@ -603,7 +585,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 						showAssignmentsWidgets(false);
 
 						showExpressionWidgets(true);
-						redrawParent();
+						redrawPage();
 					}
 				}
 			});
@@ -622,7 +604,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 						showExpressionWidgets(false);
 						
 						showAssignmentsWidgets(true);
-						redrawParent();
+						redrawPage();
 					}
 				}
 			});

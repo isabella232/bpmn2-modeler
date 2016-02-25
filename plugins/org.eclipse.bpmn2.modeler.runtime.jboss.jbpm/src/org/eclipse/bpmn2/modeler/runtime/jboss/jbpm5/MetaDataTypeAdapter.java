@@ -51,8 +51,15 @@ public class MetaDataTypeAdapter extends AdapterImpl implements IExtensionValueA
 	 */
 	@Override
 	public boolean shouldSaveElement(EObject o) {
-		if (((MetaDataType)o).getName()==null || ((MetaDataType)o).getName().isEmpty())
+		MetaDataType metaData = (MetaDataType)o;
+		String name = metaData.getName();
+		if (name==null || name.isEmpty())
 			return false;
+		if ("customAsync".equals(name)) {
+			MetaValueType metaValue = metaData.getMetaValue();
+			if (metaValue==null || "false".equals(metaValue.getValue()))
+				return false;
+		}
 		return true;
 	}
 

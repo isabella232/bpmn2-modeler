@@ -204,36 +204,35 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 		AbstractPropertiesProvider provider = getPropertiesProvider(be); 
 		if (provider==null) {
 			createEmptyLabel(be);
-			return;
 		}
-		
-		String[] properties = provider.getProperties();
-		if (properties!=null) {
-			getAttributesParent();
-			for (String property : properties) {
-				bindProperty(be,property);
+		else {
+			String[] properties = provider.getProperties();
+			if (properties!=null) {
+				getAttributesParent();
+				for (String property : properties) {
+					bindProperty(be,property);
+				}
 			}
-		}
-		
-		if (getAttributesParent().getChildren().length==0) {
-			// yech! ugly hack to hide the Attributes TWISTIE section if it's empty
-			if (attributesComposite!=null) {
-				attributesComposite.dispose();
-				attributesComposite = null;
-				attributesSection.dispose();
-				attributesSection = null;
+			
+			if (getAttributesParent().getChildren().length==0) {
+				// yech! ugly hack to hide the Attributes TWISTIE section if it's empty
+				if (attributesComposite!=null) {
+					attributesComposite.dispose();
+					attributesComposite = null;
+					attributesSection.dispose();
+					attributesSection = null;
+				}
 			}
-		}
-		else if (attributesSection!=null){
-			// Arghhh! This is the only way I could figure out how to force the
-			// Twistie to layout its contents correctly.
-			attributesSection.setRedraw(false);
-			boolean expanded = attributesSection.isExpanded();
-			attributesSection.setExpanded(!expanded);
-			attributesSection.setExpanded(expanded);
-			attributesSection.setRedraw(true);
-		}
-		
+			else if (attributesSection!=null){
+				// Arghhh! This is the only way I could figure out how to force the
+				// Twistie to layout its contents correctly.
+				attributesSection.setRedraw(false);
+				boolean expanded = attributesSection.isExpanded();
+				attributesSection.setExpanded(!expanded);
+				attributesSection.setExpanded(expanded);
+				attributesSection.setRedraw(true);
+			}
+		}		
 		redrawPage();
 	}
 
