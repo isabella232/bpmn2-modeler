@@ -15,6 +15,7 @@ import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 
 public class ResourcePropertyTester extends PropertyTester {
 
@@ -25,41 +26,38 @@ public class ResourcePropertyTester extends PropertyTester {
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 		if (receiver instanceof EObject) {
 			EObject object = (EObject) receiver;
-			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(object);
-			TargetRuntime rt = null;
-			if (prefs != null) {
-				try {
-					rt = TargetRuntime.getRuntime(object);
-				}
-				catch (Exception ex) {
-				}
-			}
-
-			if ("targetRuntimeId".equals(property)) { //$NON-NLS-1$
-				if (rt != null) {
-					return rt.getId().equals(expectedValue);
-				}
-			}
-			else if ("toolPaletteProfile".equals(property)) { //$NON-NLS-1$
-				if (rt != null) {
-					ToolPaletteDescriptor tpd = rt.getToolPalette(object);
-					if (tpd != null) {
-						for (String profileId : tpd.getProfileIds()) {
-							if (profileId.equals(expectedValue))
-								return true;
+			System.out.println("Object="+object);
+			// Get the TargetRuntime from this EObject.
+			// If the EObject's nsURI has been registered by any
+			// BPMN2 Modeler extension plugin, skip validation.
+			Resource resource = object.eResource();
+			if (resource!=null) {
+				TargetRuntime rt = TargetRuntime.getRuntime(resource);
+				if (rt!=null) {
+					if ("targetRuntimeId".equals(property)) { //$NON-NLS-1$
+						return rt.getId().equals(expectedValue);
+					}
+					else if ("toolPaletteProfile".equals(property)) { //$NON-NLS-1$
+						ToolPaletteDescriptor tpd = rt.getToolPalette(object);
+						if (tpd != null) {
+							for (String profileId : tpd.getProfileIds()) {
+								if (profileId.equals(expectedValue))
+									return true;
+							}
+							if (expectedValue instanceof String)
+								return ((String)expectedValue).isEmpty();
 						}
-						if (expectedValue instanceof String)
-							return expectedValue==null || ((String)expectedValue).isEmpty();
+					}
+					if ("doCoreValidation".equals(property)) { //$NON-NLS-1$
+						Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(object);
+						if (prefs!=null) {
+							String value = Boolean.toString( prefs.getDoCoreValidation() );
+							expectedValue = expectedValue.toString();
+							return value.equals(expectedValue);
+						}
+						return false;
 					}
 				}
-			}
-			if ("doCoreValidation".equals(property)) { //$NON-NLS-1$
-				if (prefs!=null) {
-					String value = Boolean.toString( prefs.getDoCoreValidation() );
-					expectedValue = expectedValue.toString();
-					return value.equals(expectedValue);
-				}
-				return true;
 			}
 		}
 		return false;

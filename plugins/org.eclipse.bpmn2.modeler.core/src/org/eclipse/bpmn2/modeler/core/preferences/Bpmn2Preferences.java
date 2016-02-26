@@ -81,6 +81,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -1633,38 +1634,51 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		}
 	}
 	
-	// TODO: use CNF for indigo & future - keep ResourceNavigator for backward compatibility
+	/**
+	 * Search the active workbench window page's current selection for a Resource.
+	 * If the selection is a valid Resource, then return its project as the "active" project.
+	 * 
+	 * This only works if the active workbench window is something like the Project Explorer
+	 * or Navigator View.
+	 * 
+	 * TODO: use CNF for indigo & future - keep ResourceNavigator for backward compatibility
+	 * 
+	 * @return the active, open IProject
+	 */
 	public static IProject getActiveProject() {
-		if (activeProject!=null) {
-			if (activeProject.isOpen())
-				return activeProject;
-		}
-		
-		IWorkbench workbench = PlatformUI.getWorkbench(); 
-		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		if (window!=null) {
-			IWorkbenchPage page = window.getActivePage();
-			if (page!=null) {
-				IViewPart[] parts = page.getViews();
-		
-				for (int i = 0; i < parts.length; i++) {
-					if (parts[i].getViewSite().getSelectionProvider()!=null) {
-						ISelection s = parts[i].getViewSite().getSelectionProvider().getSelection();
-						if (s instanceof StructuredSelection) {
-							StructuredSelection ss = (StructuredSelection) s;
-							Object o = ss.getFirstElement();
-							if (o instanceof IResource) {
-								IResource r = (IResource) o;
-								activeProject = r.getProject();
-								if (activeProject!=null)
-									break;
+		if (activeProject==null) {
+			try {
+				IWorkbench workbench = PlatformUI.getWorkbench(); 
+				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				if (window!=null) {
+					IWorkbenchPage page = window.getActivePage();
+					if (page!=null) {
+						IViewReference views[] = page.getViewReferences();
+						for (int i = 0; i < views.length; i++) {
+							IViewPart view = views[i].getView(false);
+							if (view!=null && view.getViewSite()!=null && view.getViewSite().getSelectionProvider()!=null) {
+								ISelection s = view.getViewSite().getSelectionProvider().getSelection();
+								if (s instanceof StructuredSelection) {
+									StructuredSelection ss = (StructuredSelection) s;
+									Object o = ss.getFirstElement();
+									if (o instanceof IResource) {
+										IResource r = (IResource) o;
+										activeProject = r.getProject();
+										if (activeProject!=null)
+											break;
+									}
+								}
 							}
 						}
 					}
 				}
 			}
+			catch(Exception e) {
+			}
 		}
-		return activeProject;
+		if (activeProject!=null && activeProject.isOpen())
+			return activeProject;
+		return null;
 	}
 
 	public static void setActiveProject(IProject project) {
