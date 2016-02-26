@@ -26,7 +26,6 @@ public class ResourcePropertyTester extends PropertyTester {
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 		if (receiver instanceof EObject) {
 			EObject object = (EObject) receiver;
-			System.out.println("Object="+object);
 			// Get the TargetRuntime from this EObject.
 			// If the EObject's nsURI has been registered by any
 			// BPMN2 Modeler extension plugin, skip validation.
