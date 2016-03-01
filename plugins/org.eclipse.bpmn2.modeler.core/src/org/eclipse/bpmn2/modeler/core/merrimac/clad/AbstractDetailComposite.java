@@ -131,6 +131,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 			if (isEmpty()) {
 				createEmptyLabel(businessObject);
 			}
+			getParent().layout();
 		}
 	}
 
