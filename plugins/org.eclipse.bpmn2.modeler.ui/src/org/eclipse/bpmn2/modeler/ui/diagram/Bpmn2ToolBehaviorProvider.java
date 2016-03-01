@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.modeler.core.features.CompoundCreateFeature;
 import org.eclipse.bpmn2.modeler.core.features.CompoundCreateFeaturePart;
@@ -381,14 +382,15 @@ public class Bpmn2ToolBehaviorProvider extends DefaultToolBehaviorProvider imple
 	
 	private IFeature getCreateFeature(ToolDescriptor tool, CompoundCreateFeature root, CompoundCreateFeaturePart node, ToolPart toolPart) {
 		IFeature parentFeature = null;
+		// this MUST be a BPMN2 model object name
 		String name = toolPart.getName();
-		EClassifier eClass = targetRuntime.getModelDescriptor().getClassifier(name);
+		EClassifier eClass = Bpmn2Package.eINSTANCE.getEClassifier(name);
 		if (eClass!=null) {
 			parentFeature = featureProvider.getCreateFeatureForBusinessObject(eClass.getInstanceClass());
 		}
 		else {
 			Activator.logError(new IllegalArgumentException(
-					"The object type '"+name+"' referenced by the tool '"+root.getName()+"'is undefined" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					"The object type '"+name+"' referenced by the tool '"+root.getName()+"' is undefined" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					));
 		}
 		
@@ -398,6 +400,7 @@ public class Bpmn2ToolBehaviorProvider extends DefaultToolBehaviorProvider imple
 				if (toolPart.hasProperties()) {
 					n.setProperties(toolPart.getProperties());
 				}
+				node = n;
 			}
 			else {
 				node = root.addChild(parentFeature);

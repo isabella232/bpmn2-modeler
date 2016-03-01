@@ -17,16 +17,18 @@ import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Factory;
+import org.eclipse.bpmn2.Bpmn2Package;
+import org.eclipse.bpmn2.Task;
+import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
@@ -55,7 +57,7 @@ import org.eclipse.graphiti.services.Graphiti;
  *
  * @param <CONTEXT> a subclass of a Graphiti {@link IContext}.
  */
-public class CompoundCreateFeaturePart<CONTEXT> {
+public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeaturePart {
 	
 	/** The Graphiti CreateFeature. */
 	IFeature feature;
@@ -65,13 +67,17 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 	
 	/** The list of properties parsed from the Tool Palette tool definition. */
 	Hashtable<String, String> properties = null;
+
+	// this part's parent CompoundCreateFeature
+	ICompoundCreateFeaturePart parent;
 	
 	/**
 	 * Instantiates a new compound create feature part.
 	 *
 	 * @param feature the feature
 	 */
-	public CompoundCreateFeaturePart(IFeature feature) {
+	public CompoundCreateFeaturePart(ICompoundCreateFeaturePart parent, IFeature feature) {
+		this.parent = parent;
 		this.feature = feature;
 	}
 	
@@ -137,7 +143,7 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 	 * @param context the context
 	 * @return the list
 	 */
-	public List<Object> create(IContext context) {
+	private List<Object> create(IContext context) {
 		// Create the parent element.
 		// For ICreateContext this will result in a BaseElement and a ContainerShape;
 		// for ICreateConnectionContext we only get a Graphiti Connection element.
@@ -148,10 +154,20 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 				for (Object o : created)
 					businessObjects.add(o);
 			}
+			else {
+				Activator.logError(
+						new IllegalArgumentException(
+							"Error in Tool "+getToolName()+": the object \""+feature.getName()+"\" can not be created - check User Preferences."));
+			}
 		}
 		else if (feature instanceof ICreateConnectionFeature && context instanceof ICreateConnectionContext) {
 			if (canCreate(context)) {
 				businessObjects.add(((ICreateConnectionFeature)feature).create((ICreateConnectionContext)context));
+			}
+			else {
+				Activator.logError(
+						new IllegalArgumentException(
+							"Error in Tool "+getToolName()+": the \""+feature.getName()+"\" connection can not be created - check User Preferences."));
 			}
 		}
 
@@ -168,6 +184,10 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 			else if (o instanceof BaseElement && businessObject==null) {
 				businessObject = (BaseElement)o;
 			}
+			// We only want the first Connection, or the first
+			// BaseElement and ContainerShape pair
+			if (connection!=null || (businessObject!=null && targetContainer!=null))
+				break;
 		}
 		if (connection!=null) {
 			// we need the BaseElement that is linked to this connection
@@ -220,7 +240,8 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 				targetContainer = ((ICreateContext)context).getTargetContainer();
 			cc.setTargetContainer(targetContainer);
 			cc.setTargetConnection(((ICreateContext)context).getTargetConnection());
-			value = this.getProperty("x"); //$NON-NLS-1$
+			
+			value = getProperty("x"); //$NON-NLS-1$
 			if (value!=null) {
 				if (targetContainer instanceof Diagram)
 					x += Integer.parseInt(value);
@@ -228,7 +249,7 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 					x = Integer.parseInt(value);
 			}
 			cc.setX(x);
-			value = this.getProperty("y"); //$NON-NLS-1$
+			value = getProperty("y"); //$NON-NLS-1$
 			if (value!=null) {
 				if (targetContainer instanceof Diagram)
 					y += Integer.parseInt(value);
@@ -236,24 +257,35 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 					y = Integer.parseInt(value);
 			}
 			cc.setY(y);
-			value = this.getProperty("width"); //$NON-NLS-1$
+			value = getProperty("width"); //$NON-NLS-1$
 			if (value!=null) {
 				width = Integer.parseInt(value);
 			}
 			cc.setWidth(width);
-			value = this.getProperty("height"); //$NON-NLS-1$
+			value = getProperty("height"); //$NON-NLS-1$
 			if (value!=null) {
 				height = Integer.parseInt(value);
 			}
 			cc.setHeight(height);
 			
+			value = getProperty("id"); //$NON-NLS-1$
+			if (value!=null) {
+				cc.putProperty(ToolPaletteDescriptor.TOOLPART_ID, value);
+			}
+			
 			childContext = cc;
 		}
 		else if (feature instanceof ICreateConnectionFeature) {
 			CreateConnectionContext cc = new CreateConnectionContext();
-			value = this.getProperty("source"); //$NON-NLS-1$
+			
+			value = getProperty("id"); //$NON-NLS-1$
 			if (value!=null) {
-				for (PictogramElement pe : pictogramElements) {
+				cc.putProperty(ToolPaletteDescriptor.TOOLPART_ID, value);
+			}
+
+			value = getProperty("source"); //$NON-NLS-1$
+			if (value!=null) {
+				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
 					if (value.equals(id)) {
 						source = pe;
@@ -263,13 +295,16 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 			}
 			else if (index-2>=0 && index-2<pictogramElements.size())
 				source = pictogramElements.get(index-2);
+
+			if (source==null) {
+				Activator.logError(
+						new IllegalArgumentException(
+							"Error in Tool "+getToolName()+": the source object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
+			}
 			
-			if (source==null)
-				source = ((ICreateConnectionContext)context).getSourcePictogramElement();
-			
-			value = this.getProperty("target"); //$NON-NLS-1$
+			value = getProperty("target"); //$NON-NLS-1$
 			if (value!=null) {
-				for (PictogramElement pe : pictogramElements) {
+				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
 					if (value.equals(id)) {
 						target = pe;
@@ -280,8 +315,11 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 			else if (index-1>=0 && index-1<pictogramElements.size())
 				target = pictogramElements.get(index-1);
 
-			if (target==null)
-				target = ((ICreateConnectionContext)context).getTargetPictogramElement();
+			if (target==null) {
+				Activator.logError(
+						new IllegalArgumentException(
+							"Error in Tool "+getToolName()+": the target object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
+			}
 			
 			Point sp = GraphicsUtil.getShapeCenter((AnchorContainer)source);
 			Point tp = GraphicsUtil.getShapeCenter((AnchorContainer)target);
@@ -296,7 +334,7 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 		}
 		
 		List<Object> result = null;
-		
+
 		result = create(childContext);
 		PictogramElement pe = null;
 		Connection cn = null;
@@ -311,12 +349,19 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 			else if (o instanceof BaseElement) {
 				be = (BaseElement)o;
 			}
+			// We only want the first Connection, or the first
+			// BaseElement and ContainerShape pair
+			if (cn!=null || (be!=null && pe!=null))
+				break;
 		}
 		
 		PictogramElement updatePE = null;
 		if (pe!=null) {
 			pictogramElements.add(pe);
-			value = this.getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			value = getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			if (value==null) {
+				value = (String) childContext.getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			}
 			if (value!=null) {
 				Graphiti.getPeService().setPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID, value);
 			}
@@ -324,22 +369,22 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 		}
 		else if (cn!=null) {
 			be = BusinessObjectUtil.getFirstBaseElement(cn);
-			value = this.getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			value = getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			if (value==null) {
+				value = (String) childContext.getProperty(ToolPaletteDescriptor.TOOLPART_ID);
+			}
 			if (value!=null) {
 				Graphiti.getPeService().setPropertyValue(cn, ToolPaletteDescriptor.TOOLPART_ID, value);
 			}
 			updatePE = cn;
 		}
 
-		// initialize any model features specified in the ToolPart definition
-		applyBusinessObjectProperties(be);
-		
 		// Update the newly created pictogram element if needed.
 		// This should be done within the same transaction so that a single
 		// "Undo" can be used to delete all pictogram elements without having
 		// to cycle through each transaction created by an Update.
 		if (updatePE!=null) {
-			addPictogramElementToContext(context, updatePE);
+			addPictogramElement(updatePE);
 			UpdateContext updateContext = new UpdateContext(updatePE);
 			IUpdateFeature updateFeature = feature.getFeatureProvider().getUpdateFeature(updateContext);
 			if ( updateFeature.updateNeeded(updateContext).toBoolean() )
@@ -348,32 +393,50 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 		
 		businessObjects.addAll(result);
 	}
-	
-	private void addPictogramElementToContext(IContext context, PictogramElement pe) {
-		List<PictogramElement> pes = (List<PictogramElement>) context.getProperty(GraphitiConstants.PICTOGRAM_ELEMENTS);
-		if (pes!=null) {
-			pes.add(pe);
-		}
-	}
-	
+
 	private void applyBusinessObjectProperties(BaseElement be) {
 		if (be!=null && properties!=null) {
-			ModelDescriptor md = TargetRuntime.getRuntime(be).getModelDescriptor();
+			TargetRuntime rt = TargetRuntime.getRuntime(be);
+			String className = be.eClass().getName();
 			for (Entry<String, String> entry : properties.entrySet()) {
-				if (entry.getKey().startsWith("$")) { //$NON-NLS-1$
-					String featureName = entry.getKey().substring(1);
-					EStructuralFeature feature = md.getFeature(be.eClass().getName(), featureName);
-					ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(be);
-					String value = entry.getValue();
-					if (value.startsWith("$")) { //$NON-NLS-1$
-						String name = value.substring(1);
-						EClassifier eClass = md.getClassifier(name);
-						EObject object = Bpmn2ModelerFactory.create(be.eResource(), (EClass)eClass);
-						adapter.getFeatureDescriptor(feature).setValue(object);
+				// the leading "$" means this property is a model object feature name
+				if (!entry.getKey().startsWith("$")) { //$NON-NLS-1$
+					continue;
+				}
+				Object value = entry.getValue();
+				// the value may reference a BPMN2 model object;
+				// in this case, create the object and use it as the value.
+				if (((String)value).startsWith("$")) { //$NON-NLS-1$
+					String name = ((String)value).substring(1);
+					EClass eClass = (EClass)Bpmn2Package.eINSTANCE.getEClassifier(name);
+					value = Bpmn2ModelerFactory.create(be.eResource(), (EClass)eClass);
+				}
+				
+				ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(be);
+				
+				// first look for the feature name in the TargetRuntime's model extensions
+				String featureName = entry.getKey().substring(1);
+				EStructuralFeature feature = null;
+				for (ModelExtensionDescriptor med : rt.getModelExtensionDescriptors()) {
+					feature = med.getEStructuralFeature(className, featureName);
+					if (feature!=null) {
+						adapter.getFeatureDescriptor(feature).setValue(value);
+						break;
 					}
-					else {
+				}
+				
+				if (feature==null) {
+					// the feature was not found in any model extensions
+					// search for the feature in the BPMN2 Package
+					EClass eClass = (EClass)Bpmn2Package.eINSTANCE.getEClassifier(className);
+					feature = eClass.getEStructuralFeature(featureName);
+					if (feature!=null) {
 						adapter.getFeatureDescriptor(feature).setValue(value);
 					}
+					else
+						Activator.logError(
+							new IllegalArgumentException(
+								"Error in Tool "+getToolName()+": the model object \""+className+"\" does not have a \""+featureName+"\" attribute."));
 				}
 			}
 		}
@@ -403,7 +466,7 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 	 * @return the compound create feature part
 	 */
 	public CompoundCreateFeaturePart<CONTEXT> addChild(IFeature feature) {
-		CompoundCreateFeaturePart<CONTEXT> node = new CompoundCreateFeaturePart<CONTEXT>(feature);
+		CompoundCreateFeaturePart<CONTEXT> node = new CompoundCreateFeaturePart<CONTEXT>(this, feature);
 		children.add(node);
 		return node;
 	}
@@ -507,5 +570,30 @@ public class CompoundCreateFeaturePart<CONTEXT> {
 		if (properties==null)
 			return null;
 		return properties.get(name);
+	}
+
+	@Override
+	public ICompoundCreateFeaturePart getParent() {
+		return parent;
+	}
+
+	@Override
+	public String getToolName() {
+		return parent.getToolName();
+	}
+
+	@Override
+	public IContext getToolContext() {
+		return parent.getToolContext();
+	}
+
+	@Override
+	public List<PictogramElement> getPictogramElements() {
+		return parent.getPictogramElements();
+	}
+
+	@Override
+	public void addPictogramElement(PictogramElement pe) {
+		parent.addPictogramElement(pe);
 	}
 }

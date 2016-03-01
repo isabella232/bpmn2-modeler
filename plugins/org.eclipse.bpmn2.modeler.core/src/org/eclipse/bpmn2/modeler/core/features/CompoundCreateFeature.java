@@ -48,7 +48,10 @@ import org.eclipse.graphiti.ui.editor.DiagramEditor;
  */
 public class CompoundCreateFeature<CONTEXT extends IContext>
 		extends AbstractCreateFeature
-		implements IBpmn2CreateFeature<BaseElement, CONTEXT>, ICreateConnectionFeature {
+		implements
+			IBpmn2CreateFeature<BaseElement, CONTEXT>,
+			ICreateConnectionFeature,
+			ICompoundCreateFeaturePart {
 	
 	/** The {@code CompoundCreateFeaturePart} children. */
 	protected List<CompoundCreateFeaturePart<CONTEXT>> children = new ArrayList<CompoundCreateFeaturePart<CONTEXT>>();
@@ -56,6 +59,8 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	/** The ToolDescriptor that defined this {@code CompoundCreateFeature}. */
 	protected ToolDescriptor tool;
 
+	protected IContext context;
+	
 	/**
 	 * Instantiates a new compound create feature.
 	 *
@@ -84,7 +89,7 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	 * @return the compound create feature part
 	 */
 	public CompoundCreateFeaturePart<CONTEXT> addChild(IFeature feature) {
-		CompoundCreateFeaturePart<CONTEXT> node = new CompoundCreateFeaturePart<CONTEXT>(feature);
+		CompoundCreateFeaturePart<CONTEXT> node = new CompoundCreateFeaturePart<CONTEXT>(this, feature);
 		children.add(node);
 		return node;
 	}
@@ -111,11 +116,12 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 		List<PictogramElement> pes = new ArrayList<PictogramElement>();
 		context.putProperty(GraphitiConstants.PICTOGRAM_ELEMENTS, pes);
 
+		this.context = context;
 		if (context instanceof ICreateContext)
 			create((ICreateContext) context);
 		else if (context instanceof ICreateConnectionContext)
 			create((ICreateConnectionContext)context);
-		getDiagramEditor().selectPictogramElements(pes.toArray(new PictogramElement[pes.size()]));
+		getDiagramEditor().setPictogramElementsForSelection(pes.toArray(new PictogramElement[pes.size()]));
 	}
 	
 	/* (non-Javadoc)
@@ -123,6 +129,7 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	 */
 	@Override
 	public boolean canCreate(ICreateContext context) {
+		this.context = context;
 		for (CompoundCreateFeaturePart<CONTEXT> ft : children) {
 			if (ft.canCreate(context)==false)
 				return false;
@@ -135,6 +142,7 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	 */
 	@Override
 	public boolean canCreate(ICreateConnectionContext context) {
+		this.context = context;
 		for (CompoundCreateFeaturePart<CONTEXT> ft : children) {
 			if (ft.canCreate(context)==false)
 				return false;
@@ -147,6 +155,7 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	 */
 	@Override
 	public Object[] create(ICreateContext context) {
+		this.context = context;
 		List<Object> businessObjects = new ArrayList<Object>();
 		List<PictogramElement> pictogramElements = new ArrayList<PictogramElement>();
 		ContainerShape targetContainer = context.getTargetContainer();
@@ -195,6 +204,7 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	 */
 	@Override
 	public Connection create(ICreateConnectionContext context) {
+		this.context = context;
 		List<Object> businessObjects = new ArrayList<Object>();
 		List<PictogramElement> pictogramElements = new ArrayList<PictogramElement>();
 		ContainerShape targetContainer = getDiagram();
@@ -405,5 +415,38 @@ public class CompoundCreateFeature<CONTEXT extends IContext>
 	
 	protected DiagramEditor getDiagramEditor() {
 		return (DiagramEditor)getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
+	}
+
+	@Override
+	public ICompoundCreateFeaturePart getParent() {
+		return null;
+	}
+	
+	@Override
+	public String getToolName() {
+		if (tool!=null) {
+			return tool.getParent().getName() + "/" + tool.getName();
+		}
+		return "Undefined Tool Name";
+	}
+	
+	@Override
+	public IContext getToolContext() {
+		return context;
+	}
+
+	@Override
+	public List<PictogramElement> getPictogramElements() {
+		// TODO Auto-generated method stub
+		List<PictogramElement> pes = (List<PictogramElement>) context.getProperty(GraphitiConstants.PICTOGRAM_ELEMENTS);
+		return pes;
+	}
+
+	@Override
+	public void addPictogramElement(PictogramElement pe) {
+		List<PictogramElement> pes = (List<PictogramElement>) context.getProperty(GraphitiConstants.PICTOGRAM_ELEMENTS);
+		if (pes!=null) {
+			pes.add(pe);
+		}
 	}
 }
