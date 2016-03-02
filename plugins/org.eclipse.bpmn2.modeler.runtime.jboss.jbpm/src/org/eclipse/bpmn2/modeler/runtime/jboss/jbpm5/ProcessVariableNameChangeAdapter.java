@@ -12,6 +12,7 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5;
 
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataObject;
+import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Error;
 import org.eclipse.bpmn2.Escalation;
 import org.eclipse.bpmn2.Message;
@@ -68,12 +69,12 @@ public class ProcessVariableNameChangeAdapter implements Adapter {
 				object instanceof Error ||
 				object instanceof Escalation ||
 				object instanceof GlobalType ||
-				(
-						// DataInput objects are a special case: Only keep the name and
-						// ID in sync if the DataInput is being used as the instance
-						// parameter for MultiInstanceLoopCharacteristics (or if the
-						// DataInput hasn't been added to a container yet).
-						object instanceof DataInput && (
+					(
+						// DataInput and DataOutput objects are a special case: Only
+						// keep the name and ID in sync if the DataInput is being used
+						// as the instance parameter for MultiInstanceLoopCharacteristics
+						// (or if the object hasn't been added to a container yet).
+						(object instanceof DataInput || object instanceof DataOutput) && (
 						object.eContainer() instanceof MultiInstanceLoopCharacteristics ||
 						object.eContainer()==null)
 					)

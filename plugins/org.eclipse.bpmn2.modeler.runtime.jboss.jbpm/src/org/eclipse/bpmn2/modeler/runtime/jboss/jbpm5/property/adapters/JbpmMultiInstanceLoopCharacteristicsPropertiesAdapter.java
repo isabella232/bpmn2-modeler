@@ -49,11 +49,9 @@ public class JbpmMultiInstanceLoopCharacteristicsPropertiesAdapter extends Multi
 			public Hashtable<String, Object> getChoiceOfValues() {
 				Hashtable<String, Object> choices = new Hashtable<String, Object>();
 				EObject container = ModelUtil.getContainer(object);
-				if (container instanceof SubProcess) {
-					// get the Property instances (a.k.a. "local variables") of the containing Process or SubProcess
-					for (EObject p : ModelUtil.collectAncestorObjects(object, "properties", new Class[] {Process.class, SubProcess.class})) { 
-						choices.put( getChoiceString(p), p);
-					}
+				// get the Property instances (a.k.a. "local variables") of the containing Process or SubProcess
+				for (EObject p : ModelUtil.collectAncestorObjects(object, "properties", new Class[] {Process.class, SubProcess.class})) { 
+					choices.put( getChoiceString(p), p);
 				}
 				return choices;
 			}
@@ -162,11 +160,9 @@ public class JbpmMultiInstanceLoopCharacteristicsPropertiesAdapter extends Multi
 			public Hashtable<String, Object> getChoiceOfValues() {
 				Hashtable<String, Object> choices = new Hashtable<String, Object>();
 				EObject container = ModelUtil.getContainer(object);
-				if (container instanceof SubProcess) {
-					// get the Property instances (a.k.a. "local variables") of the containing Process or SubProcess
-					for (EObject p : ModelUtil.collectAncestorObjects(object, "properties", new Class[] {Process.class, SubProcess.class})) { 
-						choices.put( getChoiceString(p), p);
-					}
+				// get the Property instances (a.k.a. "local variables") of the containing Process or SubProcess
+				for (EObject p : ModelUtil.collectAncestorObjects(object, "properties", new Class[] {Process.class, SubProcess.class})) { 
+					choices.put( getChoiceString(p), p);
 				}
 				return choices;
 			}
