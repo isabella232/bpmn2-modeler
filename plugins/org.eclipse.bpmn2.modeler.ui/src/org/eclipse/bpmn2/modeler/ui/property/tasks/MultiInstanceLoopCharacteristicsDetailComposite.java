@@ -16,9 +16,11 @@ import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
+import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.MultiInstanceBehavior;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
-import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.SubProcess;
+import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
@@ -32,6 +34,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.FeatureEditingDialog;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextAndButtonObjectEditor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -653,14 +656,45 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 							};
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Data_Label);
 
-
-							DataInput input = lc.getInputDataItem();
-							if (input==null) {
-								input = createModelObject(DataInput.class);
-								input.setName("");
-								InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), input);
+							if (be.eContainer() instanceof SubProcess) {
+								DataInput input = lc.getInputDataItem();
+								if (input==null) {
+									input = createModelObject(DataInput.class);
+									input.setName("");
+									InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), input);
+								}
+								editor = new DataInputOutputObjectEditor(this, input, PACKAGE.getDataInput_Name());
 							}
-							editor = new DataInputOutputObjectEditor(this, input, PACKAGE.getDataInput_Name());
+							else {
+								// must be a Task
+								editor = new ComboObjectEditor(this,object,
+										PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), PACKAGE.getDataInput()) {
+
+											@Override
+											protected FeatureEditingDialog createFeatureEditingDialog(EObject value) {
+												// In this case the container is the I/O Specification of
+												// the Task that owns the "object" which is a instance of
+												// a MultiInstanceLoopCharacteristics
+												Task task = (Task) object.eContainer();
+												InputOutputSpecification ioSpec = task.getIoSpecification();
+												if (ioSpec==null) {
+													ioSpec = Bpmn2ModelerFactory.create(
+															task.eResource(), InputOutputSpecification.class);
+													InsertionAdapter.add(task, PACKAGE.getActivity_IoSpecification(), ioSpec);
+												}
+												InputOutputSpecification ios = ioSpec;
+												EStructuralFeature f = PACKAGE.getInputOutputSpecification_DataInputs();
+												FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), ios, f, value) {
+													public void aboutToOpen() {
+														dialogContent.setData("container", ios); //$NON-NLS-1$
+														super.aboutToOpen();
+													}
+												};
+												return dialog;
+											}
+									
+								};
+							}
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Parameter_Label);
 						}
 					};
@@ -685,13 +719,20 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Data_Label);
 							
 							
-							DataOutput output = lc.getOutputDataItem();
-							if (output==null) {
-								output = createModelObject(DataOutput.class);
-								output.setName("");
-								InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), output);
+							if (be.eContainer() instanceof SubProcess) {
+								DataOutput output = lc.getOutputDataItem();
+								if (output==null) {
+									output = createModelObject(DataOutput.class);
+									output.setName("");
+									InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), output);
+								}
+								editor = new DataInputOutputObjectEditor(this, output, PACKAGE.getDataOutput_Name());
 							}
-							editor = new DataInputOutputObjectEditor(this, output, PACKAGE.getDataOutput_Name());
+							else {
+								editor = new ComboObjectEditor(this,object,
+										PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), PACKAGE.getDataOutput()) {
+								};
+							}
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Parameter_Label);
 						}
 					};
