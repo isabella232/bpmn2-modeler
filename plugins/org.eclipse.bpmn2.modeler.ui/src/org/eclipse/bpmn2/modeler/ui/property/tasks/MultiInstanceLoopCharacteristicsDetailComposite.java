@@ -17,6 +17,7 @@ import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.InputOutputSpecification;
+import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.MultiInstanceBehavior;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
 import org.eclipse.bpmn2.SubProcess;
@@ -36,6 +37,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextAndButtonObjectEditor;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -657,43 +659,11 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Data_Label);
 
 							if (be.eContainer() instanceof SubProcess) {
-								DataInput input = lc.getInputDataItem();
-								if (input==null) {
-									input = createModelObject(DataInput.class);
-									input.setName("");
-									InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), input);
-								}
-								editor = new DataInputOutputObjectEditor(this, input, PACKAGE.getDataInput_Name());
+								editor = new LoopDataItemObjectEditor(this, lc, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem());
 							}
 							else {
 								// must be a Task
-								editor = new ComboObjectEditor(this,object,
-										PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), PACKAGE.getDataInput()) {
-
-											@Override
-											protected FeatureEditingDialog createFeatureEditingDialog(EObject value) {
-												// In this case the container is the I/O Specification of
-												// the Task that owns the "object" which is a instance of
-												// a MultiInstanceLoopCharacteristics
-												Task task = (Task) object.eContainer();
-												InputOutputSpecification ioSpec = task.getIoSpecification();
-												if (ioSpec==null) {
-													ioSpec = Bpmn2ModelerFactory.create(
-															task.eResource(), InputOutputSpecification.class);
-													InsertionAdapter.add(task, PACKAGE.getActivity_IoSpecification(), ioSpec);
-												}
-												InputOutputSpecification ios = ioSpec;
-												EStructuralFeature f = PACKAGE.getInputOutputSpecification_DataInputs();
-												FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), ios, f, value) {
-													public void aboutToOpen() {
-														dialogContent.setData("container", ios); //$NON-NLS-1$
-														super.aboutToOpen();
-													}
-												};
-												return dialog;
-											}
-									
-								};
+								editor = new LoopDataItemSelectionEditor(this, lc, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem());
 							}
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Parameter_Label);
 						}
@@ -720,18 +690,11 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 							
 							
 							if (be.eContainer() instanceof SubProcess) {
-								DataOutput output = lc.getOutputDataItem();
-								if (output==null) {
-									output = createModelObject(DataOutput.class);
-									output.setName("");
-									InsertionAdapter.add(lc, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), output);
-								}
-								editor = new DataInputOutputObjectEditor(this, output, PACKAGE.getDataOutput_Name());
+								editor = new LoopDataItemObjectEditor(this, lc, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem());
 							}
 							else {
-								editor = new ComboObjectEditor(this,object,
-										PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), PACKAGE.getDataOutput()) {
-								};
+								// must be a Task
+								editor = new LoopDataItemSelectionEditor(this, lc, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem());
 							}
 							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Parameter_Label);
 						}
@@ -833,14 +796,50 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 	
 
-	public class DataInputOutputObjectEditor extends TextAndButtonObjectEditor {
-		public DataInputOutputObjectEditor(AbstractDetailComposite parent, EObject object, EStructuralFeature feature) {
+	private class LoopDataItemObjectEditor extends TextAndButtonObjectEditor {
+		
+		/**
+		 * The DataInput or DataOutput element of the MI InputDataItem or OutputDataItem
+		 */
+		ItemAwareElement element;
+		/**
+		 * The "name" feature of the above element
+		 */
+		EStructuralFeature elementFeature;
+		boolean isInput = false;
+		
+		public LoopDataItemObjectEditor(AbstractDetailComposite parent, MultiInstanceLoopCharacteristics object, EStructuralFeature feature) {
 			super(parent, object, feature);
+			if (feature==PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem()) {
+				isInput = true;
+				element = object.getInputDataItem();
+				elementFeature = PACKAGE.getDataInput_Name();
+			}
+			else if (feature==PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem()) {
+				isInput = false;
+				element = object.getOutputDataItem();
+				elementFeature = PACKAGE.getDataOutput_Name();
+			}
+			else
+				Assert.isTrue(false);
+			
+			if (element==null) {
+				if (isInput) {
+					element = createModelObject(DataInput.class);
+					element.eSet(elementFeature, "");
+					InsertionAdapter.add(object, PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem(), element);
+				}
+				else {
+					element = createModelObject(DataOutput.class);
+					element.eSet(elementFeature, "");
+					InsertionAdapter.add(object, PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem(), element);
+				}
+			}
 		}
 
 		@Override
 		protected void buttonClicked(int buttonId) {
-			FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef(), object);
+			FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), element, Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef(), element);
 			if ( dialog.open() == Window.OK) {
 				this.updateText();
 			}
@@ -848,15 +847,47 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 
 		@Override
 		protected String getText() {
-			String text = null;
-			EStructuralFeature f = object.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
-			if (f!=null) {
-				text = (String)object.eGet(f);
-			}
+			String text = (String)element.eGet(elementFeature);
 			if (text==null)
 				return ""; //$NON-NLS-1$
 			return text;
 		}
 	};
 
+	private class LoopDataItemSelectionEditor extends ComboObjectEditor {
+
+		InputOutputSpecification ioSpec;
+		EStructuralFeature ioSpecFeature;
+		boolean isInput = false;
+		
+		public LoopDataItemSelectionEditor(AbstractDetailComposite parent, MultiInstanceLoopCharacteristics object, EStructuralFeature feature) {
+			super(parent, object, feature);
+			if (feature==PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem()) {
+				isInput = true;
+				ioSpecFeature = PACKAGE.getInputOutputSpecification_DataInputs();
+			}
+			else if (feature==PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem()) {
+				isInput = false;
+				ioSpecFeature = PACKAGE.getInputOutputSpecification_DataOutputs();
+			}
+			else
+				Assert.isTrue(false);
+		}
+
+		@Override
+		protected FeatureEditingDialog createFeatureEditingDialog(EObject value) {
+			// In this case the container is the I/O Specification of
+			// the Task that owns the "object" which is a instance of
+			// a MultiInstanceLoopCharacteristics
+			Task task = (Task) object.eContainer();
+			ioSpec = task.getIoSpecification();
+			if (ioSpec==null) {
+				ioSpec = Bpmn2ModelerFactory.create(
+						task.eResource(), InputOutputSpecification.class);
+				InsertionAdapter.add(task, PACKAGE.getActivity_IoSpecification(), ioSpec);
+			}
+			return new FeatureEditingDialog(getDiagramEditor(), ioSpec, ioSpecFeature, value);
+		}
+
+	}
 }

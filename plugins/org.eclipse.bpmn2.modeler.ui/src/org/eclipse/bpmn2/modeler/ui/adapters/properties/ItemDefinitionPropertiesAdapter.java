@@ -185,8 +185,9 @@ public class ItemDefinitionPropertiesAdapter extends ExtendedPropertiesAdapter<I
 		String name = ""; //$NON-NLS-1$
 		if (itemDefinition!=null) {
 			name = getStructureName(itemDefinition);
-			if (itemDefinition.isIsCollection())
-				name += "[]"; //$NON-NLS-1$
+			// TODO: add CONTEXT_TEXT to Data Association inputs and outputs
+//			if (itemDefinition.isIsCollection())
+//				name += "[]"; //$NON-NLS-1$
 		}
 		return name;
 	}

@@ -58,11 +58,12 @@ public class DataOutputPropertiesAdapter extends ItemAwareElementPropertiesAdapt
 					text = dataOutput.getId();
 
 				if (text!=null) {
-					if (dataOutput.isIsCollection())
-						text += "[]"; //$NON-NLS-1$
-					String type = ExtendedPropertiesProvider.getTextValue(dataOutput.getItemSubjectRef());
-					if (type!=null)
-						text += " (" + type + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+					// TODO: add CONTEXT_TEXT to Data Association inputs and outputs
+//					if (dataOutput.isIsCollection())
+//						text += "[]"; //$NON-NLS-1$
+//					String type = ExtendedPropertiesProvider.getTextValue(dataOutput.getItemSubjectRef());
+//					if (type!=null && !type.isEmpty())
+//						text += " (" + type + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				return text;
 			}
