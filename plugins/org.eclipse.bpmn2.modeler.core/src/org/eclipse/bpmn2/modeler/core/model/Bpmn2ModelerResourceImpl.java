@@ -690,20 +690,22 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 
 			super.handleObjectAttribs(obj);
 
+			String xmlns = null;
+			String tns = null;
 			if (attribs != null) {
 				for (int i = 0, size = attribs.getLength(); i < size; ++i) {
 					String name = attribs.getQName(i);
 					if (name.equals(XMLResource.XML_NS)) {
 						// create an ns prefix in the prefix map for this default namespace
 						// and qualify any qnameFeatures contained in this object...
-						String namespaceURI = attribs.getValue(i);
+						xmlns = attribs.getValue(i);
 						for (EStructuralFeature f : obj.eClass().getEAllStructuralFeatures()) {
 							if (qnameMap.contains(f)) {
 								Object value = obj.eGet(f);
 								if (ModelUtil.isStringWrapper(value)) {
 									String localpart = ModelUtil.getStringWrapperValue(value);
 									if (localpart!=null && !localpart.isEmpty() && !localpart.contains(":")) { //$NON-NLS-1$
-										String prefix = helper.getPrefix(namespaceURI);
+										String prefix = helper.getPrefix(xmlns);
 										if (prefix==null || prefix.isEmpty()) {
 											for (int index = 0; true; ++index) {
 												prefix = "ns" + index; //$NON-NLS-1$
@@ -711,7 +713,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 												if (ns==null)
 													break;
 											}
-											helper.addPrefix(prefix, namespaceURI);	
+											helper.addPrefix(prefix, xmlns);	
 										}
 										ModelUtil.setStringWrapperValue(value, prefix + ":" + localpart); //$NON-NLS-1$
 									}
@@ -723,6 +725,9 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 						String prefix = name.substring(name.indexOf(':')+1);
 						String namespace = attribs.getValue(i);
 	            		NamespaceUtil.addNamespace(xmlResource, prefix, namespace);
+					}
+					else if (name.equals("tns")) {
+						tns = attribs.getValue(i);
 					}
 				}
 			}
@@ -759,10 +764,25 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				}
 			}
             else if (obj instanceof Definitions) {
-            	// fetch the targetNamespace from Definitions object
-            	// NO! This is already handled in startElement()
-//            	targetNamespace = ((Definitions)obj).getTargetNamespace();
+            	// Fetch the targetNamespace from Definitions object:
+            	// this is where we allow the TargetRuntime extension to provide
+            	// its own targetNamespace if the file doesn't define one.
+            	// The targetNamespace determines the TargetRuntime and therefore
+            	// how the file is handled, since the TargetRuntime may have special
+            	// processing that needs to be done during loading. Therefore,
+            	// it's important that we have a targetNamespace after the <definitions>
+            	// element is parsed, or the remainder of the file may not be processed
+            	// correctly.
 				targetNamespace = getTargetNamespace((Definitions)obj);
+				// if targetNamespace is not provided, use "tns" from file
+				if (targetNamespace==null && tns!=null && !tns.isEmpty())
+					targetNamespace = tns;
+				// if that didn't work, try "xmlns"
+				if (targetNamespace==null && xmlns!=null && !xmlns.isEmpty())
+					targetNamespace = xmlns;
+				// if that still didn't work use the default namespace
+				if (targetNamespace==null)
+					targetNamespace = TargetRuntime.getDefaultRuntime().getRuntimeExtension().getTargetNamespace(null);
 				((Bpmn2ModelerXmlHelper)helper).initializeTargetRuntime(targetNamespace);
 
             }

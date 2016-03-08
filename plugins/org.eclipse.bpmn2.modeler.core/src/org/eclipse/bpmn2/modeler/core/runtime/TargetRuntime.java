@@ -407,6 +407,9 @@ public class TargetRuntime extends BaseRuntimeExtensionDescriptor implements IRu
 	 */
 	public static TargetRuntime getRuntimeByNamespace(String targetNamespace) {
 		// figure out diagram type
+		if (targetNamespace==null) {
+			return null;
+		}
 		int separator = targetNamespace.lastIndexOf("/"); //$NON-NLS-1$
 		Bpmn2DiagramType type = separator != -1 ? Bpmn2DiagramType.fromString(targetNamespace.substring(separator+1)) : null;
 		return TargetRuntime.getRuntime(targetNamespace, type);
