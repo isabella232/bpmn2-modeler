@@ -40,8 +40,9 @@ public class DefinitionsValidator extends AbstractBpmn2ElementValidator<Definiti
 	 */
 	@Override
 	public IStatus validate(Definitions object) {
+		// See https://issues.jboss.org/browse/JBPM-4860
 		if (object.getTargetNamespace()==null || object.getTargetNamespace().isEmpty()) {
-			addStatus(object, Status.ERROR, Messages.DefinitionsValidator_No_TargetNamespace);
+			addStatus(object, Status.WARNING, Messages.DefinitionsValidator_No_TargetNamespace);
 		}
 		for (Import elem : object.getImports()) {
 			if (isEmpty(elem.getLocation())) {
