@@ -23,6 +23,7 @@ import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.LifecycleEvent;
 import org.eclipse.bpmn2.modeler.core.LifecycleEvent.EventType;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory.KeyValue;
@@ -279,8 +280,7 @@ public abstract class AbstractBpmn2CreateConnectionFeature<
 			pe = context.getSourceAnchor();
 		if (pe==null)
 			pe = context.getTargetAnchor();
-		EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
-		return bo.eResource();
+		return ExtendedPropertiesAdapter.getResource(pe);
 	}
 
 	/* (non-Javadoc)

@@ -18,6 +18,7 @@ import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.LifecycleEvent;
 import org.eclipse.bpmn2.modeler.core.LifecycleEvent.EventType;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.ToolTipProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
@@ -148,8 +149,12 @@ public abstract class AbstractBpmn2CreateFeature<T extends BaseElement>
 		PictogramElement pe = context.getTargetContainer();
 		if (pe==null)
 			pe = context.getTargetConnection();
-		EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
-		return bo.eResource();
+		return ExtendedPropertiesAdapter.getResource(pe);
+//		EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
+//		Resource resource = bo.eResource();
+//		if (resource==null)
+//			resource = ExtendedPropertiesAdapter.getResource(bo);
+//		return resource;
 	}
 	
 	/* (non-Javadoc)
