@@ -286,11 +286,11 @@ public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeatur
 			// Get the source and target shapes by their tool part IDs if specified.
 			// If source and target were not specified in the connection tool part,
 			// use the previously two created shapes as source and target.
-			value = getProperty("source"); //$NON-NLS-1$
-			if (value!=null) {
+			String sourceId = getProperty("source"); //$NON-NLS-1$
+			if (sourceId!=null) {
 				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
-					if (value.equals(id)) {
+					if (sourceId.equals(id)) {
 						source = pe;
 						break;
 					}
@@ -300,11 +300,11 @@ public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeatur
 				source = pictogramElements.get(index-2);
 			}
 			
-			value = getProperty("target"); //$NON-NLS-1$
-			if (value!=null) {
+			String targetId = getProperty("target"); //$NON-NLS-1$
+			if (targetId!=null) {
 				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
-					if (value.equals(id)) {
+					if (targetId.equals(id)) {
 						target = pe;
 						break;
 					}
@@ -345,12 +345,12 @@ public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeatur
 			else if (source==null) {
 				Activator.logError(
 						new IllegalArgumentException(
-							"Error in Tool "+getToolName()+": the source object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
+							"Error in Tool "+getToolName()+": the source object ID \""+sourceId+"\" can not be found for the \""+feature.getName()+"\" connection."));
 			}
 			else if (target==null) {
 				Activator.logError(
 						new IllegalArgumentException(
-							"Error in Tool "+getToolName()+": the target object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
+							"Error in Tool "+getToolName()+": the target object ID \""+targetId+"\" can not be found for the \""+feature.getName()+"\" connection."));
 			}
 			else {
 				Point sp = GraphicsUtil.getShapeCenter((AnchorContainer)source);
