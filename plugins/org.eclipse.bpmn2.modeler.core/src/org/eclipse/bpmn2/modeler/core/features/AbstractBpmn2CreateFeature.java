@@ -150,11 +150,6 @@ public abstract class AbstractBpmn2CreateFeature<T extends BaseElement>
 		if (pe==null)
 			pe = context.getTargetConnection();
 		return ExtendedPropertiesAdapter.getResource(pe);
-//		EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
-//		Resource resource = bo.eResource();
-//		if (resource==null)
-//			resource = ExtendedPropertiesAdapter.getResource(bo);
-//		return resource;
 	}
 	
 	/* (non-Javadoc)
