@@ -146,9 +146,11 @@ public class TextObjectEditor extends ObjectEditor {
 		try {
 			isWidgetUpdating = true;
 			if (!text.isDisposed()) {
-				if (!text.getText().equals(getText())) {
+				String oldText = text.getText();
+				String newText = getText();
+				if (!newText.equals(oldText)) {
 					int pos = text.getCaretPosition();
-					setText(getText());
+					setText(newText);
 					text.setSelection(pos, pos);
 				}
 			}
@@ -195,7 +197,6 @@ public class TextObjectEditor extends ObjectEditor {
 	@Override
 	public void notifyChanged(Notification notification) {
 		if (notification.getEventType() == -1) {
-			updateText();
 			super.notifyChanged(notification);
 		}
 		else if (object == notification.getNotifier()) {
