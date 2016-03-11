@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesProvider;
@@ -30,6 +31,7 @@ import org.eclipse.bpmn2.modeler.core.features.artifact.AbstractCreateArtifactFe
 import org.eclipse.bpmn2.modeler.core.features.label.AddShapeLabelFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.LabelPosition;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
@@ -47,7 +49,6 @@ import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
-import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -303,13 +304,16 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 			PictogramElement pe = context.getPictogramElement();
 			if (FeatureSupport.isGroupShape(pe)) {
 				for (ContainerShape shape : containedShapes) {
-					if (!FeatureSupport.isLabelShape(shape)) {
+					BaseElement be = BusinessObjectUtil.getFirstBaseElement(shape);
+					if (!(be instanceof BoundaryEvent)) {
 						ILocation loc = Graphiti.getPeService().getLocationRelativeToDiagram(shape);
 						int x = loc.getX() + context.getDeltaX();
 						int y = loc.getY() + context.getDeltaY();
 						MoveShapeContext mc = new MoveShapeContext(shape);
 						mc.setSourceContainer(shape.getContainer());
 						mc.setTargetContainer(shape.getContainer());
+						mc.setDeltaX(context.getDeltaX());
+						mc.setDeltaY(context.getDeltaY());
 						mc.setX(x);
 						mc.setY(y);
 						IMoveShapeFeature mf = getFeatureProvider().getMoveShapeFeature(mc);
