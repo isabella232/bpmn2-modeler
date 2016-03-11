@@ -4,7 +4,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<groupId>org.eclipse</groupId>
 	<artifactId>org-eclipse-bpmn2-modeler</artifactId>
 	<name>BPMN2 Modeler</name>
-	<version>1.2.3-SNAPSHOT</version>
+	<version>1.2.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
 		<!-- must build parent BEFORE building the rest of this project 

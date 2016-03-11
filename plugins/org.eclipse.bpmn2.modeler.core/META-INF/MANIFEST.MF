@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Localization: plugin
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.bpmn2.modeler.core;singleton:=true
-Bundle-Version: 1.2.3.qualifier
+Bundle-Version: 1.2.4.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.core.Activator
 Bundle-Vendor: %providerName
 Require-Bundle: org.eclipse.emf.transaction,
