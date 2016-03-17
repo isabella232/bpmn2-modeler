@@ -61,45 +61,11 @@ public class JbpmReceiveTaskDetailComposite extends JbpmTaskDetailComposite {
 				messageRef, message);
 		
 		Resource resource = activity.eResource();
+		// force the creation of the Activity's InputOutputSpecification
+		// and its Input/Output Sets if necessary.
+		InsertionAdapter.executeIfNeeded(activity);
 		InputOutputSpecification ioSpec = activity.getIoSpecification();
-		if (ioSpec==null) {
-			ioSpec = Bpmn2ModelerFactory.createObject(resource, InputOutputSpecification.class);
-			if (changed) {
-				activity.setIoSpecification(ioSpec);
-			}
-			else {
-				InsertionAdapter.add(activity,
-						PACKAGE.getActivity_IoSpecification(),
-						ioSpec);
-			}
-		}
-		// do we need this?
-//		if (ioSpec.getInputSets().size()==0) {
-//			final InputSet inputSet = Bpmn2ModelerFactory.createObject(resource, InputSet.class);
-//			ioSpec.getInputSets().add(inputSet);
-//		}
-//		if (ioSpec.getOutputSets().size()==0) {
-//			final OutputSet outputSet = Bpmn2ModelerFactory.createObject(resource, OutputSet.class);
-//			ioSpec.getOutputSets().add(outputSet);
-//		}
-
-//		if (ioSpec.getDataInputs().isEmpty()) {
-//			final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);
-//			dataInput.setName(MESSAGEID_NAME);
-//			if (changed) {
-//				ioSpec.getDataInputs().add(dataInput);
-//			}
-//			else {
-//				final InputOutputSpecification ios = ioSpec;
-//				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-//				domain.getCommandStack().execute(new RecordingCommand(domain) {
-//					@Override
-//					protected void doExecute() {
-//						ios.getDataInputs().add(dataInput);
-//					}
-//				});
-//			}
-//		}
+		InsertionAdapter.executeIfNeeded(ioSpec);
 
 		if (ioSpec.getDataOutputs().isEmpty()) {
 			final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);

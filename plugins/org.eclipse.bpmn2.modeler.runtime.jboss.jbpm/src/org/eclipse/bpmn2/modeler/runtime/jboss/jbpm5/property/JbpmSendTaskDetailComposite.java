@@ -59,29 +59,12 @@ public class JbpmSendTaskDetailComposite extends JbpmServiceTaskDetailComposite 
 				operationRef, operation,
 				messageRef, message);
 		
-		
 		Resource resource = activity.eResource();
+		// force the creation of the Activity's InputOutputSpecification
+		// and its Input/Output Sets if necessary.
+		InsertionAdapter.executeIfNeeded(activity);
 		InputOutputSpecification ioSpec = activity.getIoSpecification();
-		if (ioSpec==null) {
-			ioSpec = Bpmn2ModelerFactory.createObject(resource, InputOutputSpecification.class);
-			if (changed) {
-				activity.setIoSpecification(ioSpec);
-			}
-			else {
-				InsertionAdapter.add(activity,
-						PACKAGE.getActivity_IoSpecification(),
-						ioSpec);
-			}
-		}
-		// do we need this?
-//		if (ioSpec.getInputSets().size()==0) {
-//			final InputSet inputSet = Bpmn2ModelerFactory.createObject(resource, InputSet.class);
-//			ioSpec.getInputSets().add(inputSet);
-//		}
-//		if (ioSpec.getOutputSets().size()==0) {
-//			final OutputSet outputSet = Bpmn2ModelerFactory.createObject(resource, OutputSet.class);
-//			ioSpec.getOutputSets().add(outputSet);
-//		}
+		InsertionAdapter.executeIfNeeded(ioSpec);
 
 		if (ioSpec.getDataInputs().isEmpty()) {
 			final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);

@@ -48,29 +48,22 @@ public class JbpmServiceTaskDetailComposite extends JbpmTaskDetailComposite {
 	}
 	
 	@Override
-	protected void createMessageAssociations(Composite container, Activity serviceTask,
+	protected void createMessageAssociations(Composite container, Activity activity,
 			EReference operationRef, Operation operation,
 			EReference messageRef, Message message) {
-		Operation oldOperation = (Operation) serviceTask.eGet(operationRef);
+		Operation oldOperation = (Operation) activity.eGet(operationRef);
 		boolean changed = (oldOperation != operation);
 
-		super.createMessageAssociations(container, serviceTask,
+		super.createMessageAssociations(container, activity,
 				operationRef, operation,
 				messageRef, message);
 		
-		Resource resource = serviceTask.eResource();
-		InputOutputSpecification ioSpec = serviceTask.getIoSpecification();
-		if (ioSpec==null) {
-			ioSpec = Bpmn2ModelerFactory.createObject(resource, InputOutputSpecification.class);
-			if (changed) {
-				serviceTask.setIoSpecification(ioSpec);
-			}
-			else {
-				InsertionAdapter.add(serviceTask,
-						PACKAGE.getActivity_IoSpecification(),
-						ioSpec);
-			}
-		}
+		Resource resource = activity.eResource();
+		// force the creation of the Activity's InputOutputSpecification
+		// and its Input/Output Sets if necessary.
+		InsertionAdapter.executeIfNeeded(activity);
+		InputOutputSpecification ioSpec = activity.getIoSpecification();
+		InsertionAdapter.executeIfNeeded(ioSpec);
 
 		if (ioSpec.getDataInputs().isEmpty()) {
 			if (ioSpec.getDataInputs().isEmpty()) {
