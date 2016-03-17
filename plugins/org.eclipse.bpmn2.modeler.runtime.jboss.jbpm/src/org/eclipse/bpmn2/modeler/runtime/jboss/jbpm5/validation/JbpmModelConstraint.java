@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation;
 
+import java.util.List;
+
 import org.eclipse.bpmn2.BusinessRuleTask;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.DataAssociation;
@@ -21,7 +23,11 @@ import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.Signal;
+import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.UserTask;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.validation.validators.ItemAwareElementValidator;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.extensions.NotificationType;
@@ -88,11 +94,36 @@ public class JbpmModelConstraint extends AbstractModelConstraint {
 			DataInput input = (DataInput) object;
 			if (input.eContainer() instanceof InputOutputSpecification) {
 				InputOutputSpecification iospec = (InputOutputSpecification) input.eContainer();
-				if (iospec.eContainer() instanceof UserTask) {
+				EObject container = iospec.eContainer();
+				if (container instanceof UserTask) {
 					String name = input.getName();
 					if (	NotificationType.getByName(name) != null ||
 							ReassignmentType.getByName(name) != null) {
 						return ctx.createSuccessStatus();
+					}
+				}
+			
+				if (container instanceof Task) {
+					// ...and apparently none of the "hard-coded" I/O parameters
+					// for UserTask and ManualTask require a data type either
+					ModelExtensionDescriptor med = null;
+					ExtendedPropertiesAdapter<?> adapter = ExtendedPropertiesAdapter.adapt(container);
+					if (adapter!=null) {
+						// look for it in the property adapter first
+						med = adapter.getProperty(ModelExtensionDescriptor.class);
+					}
+					
+					if (med!=null) {
+						// This Task object has additional properties defined either by way of the
+						// <modelExtension> defined in the plugin.xml or in Work Item Definitions.
+						List<Property> props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
+						for (Property property : props) {
+							final String name = property.getFirstStringValue();
+							if (input.getName().equals(name)) {
+								// this input parameter doesn't need validation
+								return ctx.createSuccessStatus();
+							}
+						}
 					}
 				}
 			}

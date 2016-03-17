@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 public class JbpmReceiveTaskDetailComposite extends JbpmTaskDetailComposite {
 
 	public final static String MESSAGE_NAME = "Message"; //$NON-NLS-1$
-	public final static String MESSAGEID_NAME = "MessageId"; //$NON-NLS-1$
+//	public final static String MESSAGEID_NAME = "MessageId"; //$NON-NLS-1$
 
 	/**
 	 * @param section
@@ -83,23 +83,23 @@ public class JbpmReceiveTaskDetailComposite extends JbpmTaskDetailComposite {
 //			ioSpec.getOutputSets().add(outputSet);
 //		}
 
-		if (ioSpec.getDataInputs().isEmpty()) {
-			final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);
-			dataInput.setName(MESSAGEID_NAME);
-			if (changed) {
-				ioSpec.getDataInputs().add(dataInput);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataInputs().add(dataInput);
-					}
-				});
-			}
-		}
+//		if (ioSpec.getDataInputs().isEmpty()) {
+//			final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);
+//			dataInput.setName(MESSAGEID_NAME);
+//			if (changed) {
+//				ioSpec.getDataInputs().add(dataInput);
+//			}
+//			else {
+//				final InputOutputSpecification ios = ioSpec;
+//				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+//				domain.getCommandStack().execute(new RecordingCommand(domain) {
+//					@Override
+//					protected void doExecute() {
+//						ios.getDataInputs().add(dataInput);
+//					}
+//				});
+//			}
+//		}
 
 		if (ioSpec.getDataOutputs().isEmpty()) {
 			final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
@@ -119,21 +119,21 @@ public class JbpmReceiveTaskDetailComposite extends JbpmTaskDetailComposite {
 			}
 		}
 		
-		if (!MESSAGEID_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
-			if (changed) {
-				ioSpec.getDataInputs().get(0).setName(MESSAGEID_NAME);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataInputs().get(0).setName(MESSAGEID_NAME);
-					}
-				});
-			}
-		}
+//		if (!MESSAGEID_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
+//			if (changed) {
+//				ioSpec.getDataInputs().get(0).setName(MESSAGEID_NAME);
+//			}
+//			else {
+//				final InputOutputSpecification ios = ioSpec;
+//				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+//				domain.getCommandStack().execute(new RecordingCommand(domain) {
+//					@Override
+//					protected void doExecute() {
+//						ios.getDataInputs().get(0).setName(MESSAGEID_NAME);
+//					}
+//				});
+//			}
+//		}
 
 		if (!MESSAGE_NAME.equals(ioSpec.getDataOutputs().get(0).getName())) {
 			if (changed) {

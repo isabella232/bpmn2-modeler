@@ -144,9 +144,9 @@ public class JbpmIoParametersListComposite extends IoParametersListComposite {
 								if ("Message".equals(elementName)) {
 									skip = true;
 								}
-								else if ("MessageId".equals(elementName)) {
-									skip = true;
-								}
+//								else if ("MessageId".equals(elementName)) {
+//									skip = true;
+//								}
 							}
 							else if (activity instanceof ServiceTask) {
 								if ("Parameter".equals(elementName)) {

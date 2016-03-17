@@ -220,10 +220,12 @@ public class CustomElementFeatureContainer implements ICustomElementFeatureConta
 
 	public static String findId(EObject eObject) {
 		TargetRuntime rt = TargetRuntime.getRuntime(eObject);
-		for (CustomTaskDescriptor ctd : rt.getCustomTaskDescriptors()) {
-			String id = ctd.getFeatureContainer().getId(eObject);
-			if (ctd.getId().equals(id)) {
-				return id;
+		if (rt!=null) {
+			for (CustomTaskDescriptor ctd : rt.getCustomTaskDescriptors()) {
+				String id = ctd.getFeatureContainer().getId(eObject);
+				if (ctd.getId().equals(id)) {
+					return id;
+				}
 			}
 		}
 		return null;
