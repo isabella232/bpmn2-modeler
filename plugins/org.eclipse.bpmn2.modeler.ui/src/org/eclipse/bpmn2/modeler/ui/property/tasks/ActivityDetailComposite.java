@@ -322,6 +322,28 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 	private void bindOperationMessageRef(final Composite container, final Activity activity, final EReference operationRef, final EReference messageRef) {
 		final String operationLabel = getBusinessObjectDelegate().getLabel(activity, operationRef);
 		final ObjectEditor operationEditor = new ComboObjectEditor(this,activity,operationRef) {
+			
+			@Override
+			protected EObject createObject() throws Exception {
+				final Operation oldOperation = (Operation) activity.eGet(operationRef);
+				final Message message = null; //(Message) activity.eGet(messageRef);
+				final Operation newOperation = (Operation) super.createObject();
+				if (oldOperation!=newOperation) {
+					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							activity.eSet(operationRef, oldOperation);
+							createMessageAssociations(container, activity,
+									operationRef, newOperation,
+									messageRef, message);
+						}
+					});
+				}
+				
+				return newOperation;
+			}
+			
 			@Override
 			public boolean setValue(final Object result) {
 				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
@@ -371,6 +393,20 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		if (messageRef!=null) {
 			final String messageLabel = getBusinessObjectDelegate().getLabel(activity, messageRef);
 			final ObjectEditor messageEditor = new ComboObjectEditor(this,activity,messageRef) {
+				@Override
+				protected EObject createObject() throws Exception {
+					Operation operation = (Operation) activity.eGet(operationRef);
+					Message message = (Message) activity.eGet(messageRef);
+
+					EObject object = super.createObject();
+
+					createMessageAssociations(container, activity,
+							operationRef, operation,
+							messageRef, message);
+					
+					return object;
+				}
+				
 				@Override
 				public boolean setValue(final Object result) {
 					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
@@ -454,7 +490,7 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		if (ioSpec==null) {
 			ioSpec = Bpmn2ModelerFactory.createObject(resource, InputOutputSpecification.class);
 			ModelUtil.setID(ioSpec, resource);
-			if (operationChanged) {
+			if (operationChanged || messageChanged) {
 				activity.setIoSpecification(ioSpec);
 			}
 		}
@@ -462,7 +498,7 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		final InputSet inputSet = Bpmn2ModelerFactory.createObject(resource, InputSet.class);
 		if (ioSpec.getInputSets().size()==0) {
 			ModelUtil.setID(inputSet);
-			if (operationChanged || ioSpec.eContainer()==null)
+			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
 			{
 				ioSpec.getInputSets().add(inputSet);
 			}
@@ -474,7 +510,7 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		final OutputSet outputSet = Bpmn2ModelerFactory.createObject(resource, OutputSet.class);
 		if (ioSpec.getOutputSets().size()==0) {
 			ModelUtil.setID(outputSet);
-			if (operationChanged || ioSpec.eContainer()==null)
+			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
 			{
 				ioSpec.getOutputSets().add(outputSet);
 			}

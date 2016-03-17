@@ -14,12 +14,10 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.Operation;
-import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.DataAssociationDetailComposite.MapType;
@@ -61,59 +59,56 @@ public class JbpmReceiveTaskDetailComposite extends JbpmTaskDetailComposite {
 				messageRef, message);
 		
 		Resource resource = activity.eResource();
-		// force the creation of the Activity's InputOutputSpecification
-		// and its Input/Output Sets if necessary.
-		InsertionAdapter.executeIfNeeded(activity);
 		InputOutputSpecification ioSpec = activity.getIoSpecification();
-		InsertionAdapter.executeIfNeeded(ioSpec);
-
-		if (ioSpec.getDataOutputs().isEmpty()) {
-			final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
-			dataOutput.setName(MESSAGE_NAME);
-			if (changed) {
-				ioSpec.getDataOutputs().add(dataOutput);
+		if (ioSpec!=null) {
+			if (ioSpec.getDataOutputs().isEmpty()) {
+				final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
+				dataOutput.setName(MESSAGE_NAME);
+				if (changed) {
+					ioSpec.getDataOutputs().add(dataOutput);
+				}
+				else {
+					final InputOutputSpecification ios = ioSpec;
+					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							ios.getDataOutputs().add(dataOutput);
+						}
+					});
+				}
 			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataOutputs().add(dataOutput);
-					}
-				});
-			}
-		}
-		
-//		if (!MESSAGEID_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
-//			if (changed) {
-//				ioSpec.getDataInputs().get(0).setName(MESSAGEID_NAME);
+			
+//			if (!MESSAGEID_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
+//				if (changed) {
+//					ioSpec.getDataInputs().get(0).setName(MESSAGEID_NAME);
+//				}
+//				else {
+//					final InputOutputSpecification ios = ioSpec;
+//					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+//					domain.getCommandStack().execute(new RecordingCommand(domain) {
+//						@Override
+//						protected void doExecute() {
+//							ios.getDataInputs().get(0).setName(MESSAGEID_NAME);
+//						}
+//					});
+//				}
 //			}
-//			else {
-//				final InputOutputSpecification ios = ioSpec;
-//				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-//				domain.getCommandStack().execute(new RecordingCommand(domain) {
-//					@Override
-//					protected void doExecute() {
-//						ios.getDataInputs().get(0).setName(MESSAGEID_NAME);
-//					}
-//				});
-//			}
-//		}
-
-		if (!MESSAGE_NAME.equals(ioSpec.getDataOutputs().get(0).getName())) {
-			if (changed) {
-				ioSpec.getDataOutputs().get(0).setName(MESSAGE_NAME);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataOutputs().get(0).setName(MESSAGE_NAME);
-					}
-				});
+	
+			if (!MESSAGE_NAME.equals(ioSpec.getDataOutputs().get(0).getName())) {
+				if (changed) {
+					ioSpec.getDataOutputs().get(0).setName(MESSAGE_NAME);
+				}
+				else {
+					final InputOutputSpecification ios = ioSpec;
+					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							ios.getDataOutputs().get(0).setName(MESSAGE_NAME);
+						}
+					});
+				}
 			}
 		}
 		

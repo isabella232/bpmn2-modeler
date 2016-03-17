@@ -20,7 +20,6 @@ import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.Operation;
-import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.DataAssociationDetailComposite.MapType;
@@ -59,18 +58,32 @@ public class JbpmServiceTaskDetailComposite extends JbpmTaskDetailComposite {
 				messageRef, message);
 		
 		Resource resource = activity.eResource();
-		// force the creation of the Activity's InputOutputSpecification
-		// and its Input/Output Sets if necessary.
-		InsertionAdapter.executeIfNeeded(activity);
 		InputOutputSpecification ioSpec = activity.getIoSpecification();
-		InsertionAdapter.executeIfNeeded(ioSpec);
-
-		if (ioSpec.getDataInputs().isEmpty()) {
+		if (ioSpec!=null) {
 			if (ioSpec.getDataInputs().isEmpty()) {
-				final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);
-				dataInput.setName(INPUT_NAME);
+				if (ioSpec.getDataInputs().isEmpty()) {
+					final DataInput dataInput =  Bpmn2ModelerFactory.createObject(resource, DataInput.class);
+					dataInput.setName(INPUT_NAME);
+					if (changed) {
+						ioSpec.getDataInputs().add(dataInput);
+					}
+					else {
+						final InputOutputSpecification ios = ioSpec;
+						TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+						domain.getCommandStack().execute(new RecordingCommand(domain) {
+							@Override
+							protected void doExecute() {
+								ios.getDataInputs().add(dataInput);
+							}
+						});
+					}
+				}
+			}
+			if (ioSpec.getDataOutputs().isEmpty()) {
+				final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
+				dataOutput.setName(OUTPUT_NAME);
 				if (changed) {
-					ioSpec.getDataInputs().add(dataInput);
+					ioSpec.getDataOutputs().add(dataOutput);
 				}
 				else {
 					final InputOutputSpecification ios = ioSpec;
@@ -78,62 +91,45 @@ public class JbpmServiceTaskDetailComposite extends JbpmTaskDetailComposite {
 					domain.getCommandStack().execute(new RecordingCommand(domain) {
 						@Override
 						protected void doExecute() {
-							ios.getDataInputs().add(dataInput);
+							ios.getDataOutputs().add(dataOutput);
+						}
+					});
+				}
+			}
+	
+			if (!INPUT_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
+				if (changed) {
+					ioSpec.getDataInputs().get(0).setName(INPUT_NAME);
+				}
+				else {
+					final InputOutputSpecification ios = ioSpec;
+					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							ios.getDataInputs().get(0).setName(INPUT_NAME);
+						}
+					});
+				}
+			}
+	
+			if (!OUTPUT_NAME.equals(ioSpec.getDataOutputs().get(0).getName())) {
+				if (changed) {
+					ioSpec.getDataOutputs().get(0).setName(OUTPUT_NAME);
+				}
+				else {
+					final InputOutputSpecification ios = ioSpec;
+					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+					domain.getCommandStack().execute(new RecordingCommand(domain) {
+						@Override
+						protected void doExecute() {
+							ios.getDataOutputs().get(0).setName(OUTPUT_NAME);
 						}
 					});
 				}
 			}
 		}
-		if (ioSpec.getDataOutputs().isEmpty()) {
-			final DataOutput dataOutput =  Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
-			dataOutput.setName(OUTPUT_NAME);
-			if (changed) {
-				ioSpec.getDataOutputs().add(dataOutput);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataOutputs().add(dataOutput);
-					}
-				});
-			}
-		}
-
-		if (!INPUT_NAME.equals(ioSpec.getDataInputs().get(0).getName())) {
-			if (changed) {
-				ioSpec.getDataInputs().get(0).setName(INPUT_NAME);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataInputs().get(0).setName(INPUT_NAME);
-					}
-				});
-			}
-		}
-
-		if (!OUTPUT_NAME.equals(ioSpec.getDataOutputs().get(0).getName())) {
-			if (changed) {
-				ioSpec.getDataOutputs().get(0).setName(OUTPUT_NAME);
-			}
-			else {
-				final InputOutputSpecification ios = ioSpec;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						ios.getDataOutputs().get(0).setName(OUTPUT_NAME);
-					}
-				});
-			}
-		}
-
+		
 		outputComposite.setAllowedMapTypes(MapType.Property.getValue());
 		inputComposite.setAllowedMapTypes(MapType.Property.getValue() | MapType.SingleAssignment.getValue());
 	}
