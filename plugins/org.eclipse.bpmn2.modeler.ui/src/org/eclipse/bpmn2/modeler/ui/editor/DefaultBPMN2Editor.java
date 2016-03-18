@@ -639,7 +639,7 @@ public class DefaultBPMN2Editor extends DiagramEditor implements IPreferenceChan
 
 	@Override
 	public synchronized void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if (!selectionChanging) {
+		if (!selectionChanging && selection instanceof IStructuredSelection) {
 			try {
 				selectionChanging = true;
 				// Filter out label shapes as these are controlled by their ContainerShape owners
