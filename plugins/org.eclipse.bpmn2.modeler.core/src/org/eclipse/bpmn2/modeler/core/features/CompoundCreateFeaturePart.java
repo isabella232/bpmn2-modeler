@@ -283,54 +283,86 @@ public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeatur
 				cc.putProperty(ToolPaletteDescriptor.TOOLPART_ID, value);
 			}
 
-			value = getProperty("source"); //$NON-NLS-1$
-			if (value!=null) {
+			// Get the source and target shapes by their tool part IDs if specified.
+			// If source and target were not specified in the connection tool part,
+			// use the previously two created shapes as source and target.
+			String sourceId = getProperty("source"); //$NON-NLS-1$
+			if (sourceId!=null) {
 				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
-					if (value.equals(id)) {
+					if (sourceId.equals(id)) {
 						source = pe;
 						break;
 					}
 				}
 			}
-			else if (index-2>=0 && index-2<pictogramElements.size())
+			else if (index-2>=0 && index-2<pictogramElements.size()) {
 				source = pictogramElements.get(index-2);
-
-			if (source==null) {
-				Activator.logError(
-						new IllegalArgumentException(
-							"Error in Tool "+getToolName()+": the source object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
 			}
 			
-			value = getProperty("target"); //$NON-NLS-1$
-			if (value!=null) {
+			String targetId = getProperty("target"); //$NON-NLS-1$
+			if (targetId!=null) {
 				for (PictogramElement pe : getPictogramElements()) {
 					String id = Graphiti.getPeService().getPropertyValue(pe, ToolPaletteDescriptor.TOOLPART_ID);
-					if (value.equals(id)) {
+					if (targetId.equals(id)) {
 						target = pe;
 						break;
 					}
 				}
 			}
-			else if (index-1>=0 && index-1<pictogramElements.size())
+			else if (index-1>=0 && index-1<pictogramElements.size()) {
 				target = pictogramElements.get(index-1);
+			}
 
-			if (target==null) {
+			// It is possible that this compound create connection feature is defined
+			// by itself and is not part of a longer tool chain with shape creation tools.
+			// In that case, use the provided ICreateConnection context - this should have
+			// source and target information
+			if (source==null && target==null && context instanceof ICreateConnectionContext) {
+				ICreateConnectionContext ccc = (ICreateConnectionContext) context;
+				if (ccc.getSourceAnchor()==null) {
+					Activator.logError(
+							new IllegalArgumentException(
+								"Error in Tool "+getToolName()+": source anchor is null for the \""+feature.getName()+"\" connection."));
+				}
+				if (ccc.getTargetAnchor()==null) {
+					Activator.logError(
+							new IllegalArgumentException(
+								"Error in Tool "+getToolName()+": target anchor is null for the \""+feature.getName()+"\" connection."));
+				}
+				if (ccc.getSourcePictogramElement()==null) {
+					Activator.logError(
+							new IllegalArgumentException(
+								"Error in Tool "+getToolName()+": source shape is null for the \""+feature.getName()+"\" connection."));
+				}
+				if (ccc.getTargetPictogramElement()==null) {
+					Activator.logError(
+							new IllegalArgumentException(
+								"Error in Tool "+getToolName()+": target shape is null for the \""+feature.getName()+"\" connection."));
+				}
+				childContext = context;
+			}
+			else if (source==null) {
 				Activator.logError(
 						new IllegalArgumentException(
-							"Error in Tool "+getToolName()+": the target object ID \""+value+"\" can not be found for the \""+feature.getName()+"\" connection."));
+							"Error in Tool "+getToolName()+": the source object ID \""+sourceId+"\" can not be found for the \""+feature.getName()+"\" connection."));
 			}
-			
-			Point sp = GraphicsUtil.getShapeCenter((AnchorContainer)source);
-			Point tp = GraphicsUtil.getShapeCenter((AnchorContainer)target);
-			FixPointAnchor sourceAnchor = AnchorUtil.createAnchor((AnchorContainer)source, tp);
-			FixPointAnchor targetAnchor = AnchorUtil.createAnchor((AnchorContainer)target, sp);
-			cc.setSourcePictogramElement(source);
-			cc.setTargetPictogramElement(target);
-			cc.setSourceAnchor(sourceAnchor);
-			cc.setTargetAnchor(targetAnchor);
-			
-			childContext = cc;
+			else if (target==null) {
+				Activator.logError(
+						new IllegalArgumentException(
+							"Error in Tool "+getToolName()+": the target object ID \""+targetId+"\" can not be found for the \""+feature.getName()+"\" connection."));
+			}
+			else {
+				Point sp = GraphicsUtil.getShapeCenter((AnchorContainer)source);
+				Point tp = GraphicsUtil.getShapeCenter((AnchorContainer)target);
+				FixPointAnchor sourceAnchor = AnchorUtil.createAnchor((AnchorContainer)source, tp);
+				FixPointAnchor targetAnchor = AnchorUtil.createAnchor((AnchorContainer)target, sp);
+				cc.setSourcePictogramElement(source);
+				cc.setTargetPictogramElement(target);
+				cc.setSourceAnchor(sourceAnchor);
+				cc.setTargetAnchor(targetAnchor);
+				childContext = cc;
+			}
 		}
 		
 		List<Object> result = null;
@@ -409,7 +441,7 @@ public class CompoundCreateFeaturePart<CONTEXT> implements ICompoundCreateFeatur
 				if (((String)value).startsWith("$")) { //$NON-NLS-1$
 					String name = ((String)value).substring(1);
 					EClass eClass = (EClass)Bpmn2Package.eINSTANCE.getEClassifier(name);
-					value = Bpmn2ModelerFactory.createObject(be.eResource(), (EClass)eClass);
+					value = Bpmn2ModelerFactory.eINSTANCE.create((EClass)eClass);
 				}
 				
 				ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(be);
