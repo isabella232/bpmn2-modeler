@@ -206,7 +206,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 													NLS.bind(
 														Messages.JBPM5RuntimeExtension_Duplicate_Task_Message,
 														ctd.getId(),
-														wid.getDefinitionFile().getFullPath().toString())
+														wid.getDefinitionFile())
 												);
 										}
 									});
