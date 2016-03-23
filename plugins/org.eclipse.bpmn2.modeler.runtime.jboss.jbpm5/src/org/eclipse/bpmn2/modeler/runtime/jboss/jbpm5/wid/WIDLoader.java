@@ -118,6 +118,7 @@ public class WIDLoader {
 		for (WorkItemDefinition wid : widMap.values()) {
 			String icon = wid.getIcon();
 			getProjectFileIcon(file, icon);
+			((WorkItemDefinitionImpl)wid).setDefinitionFile(file.getFullPath().toFile());
 		}
 		projectWIDs.putAll(widMap);
 	}
@@ -151,10 +152,10 @@ public class WIDLoader {
 		JarFile jar = new java.util.jar.JarFile(jarFile);
 	    InputStream is = null;
 		try {
-			System.out.println("Jar: "+jar.getName());
-			for (Entry<Object, Object> e : jar.getManifest().getMainAttributes().entrySet()) {
-				System.out.println("  "+e.getKey() + "=" + e.getValue());
-			}
+//			System.out.println("Jar: "+jar.getName());
+//			for (Entry<Object, Object> e : jar.getManifest().getMainAttributes().entrySet()) {
+//				System.out.println("  "+e.getKey() + "=" + e.getValue());
+//			}
 			Enumeration<JarEntry> enumEntries = jar.entries();
 			while (enumEntries.hasMoreElements()) {
 			    JarEntry entry = enumEntries.nextElement();
@@ -168,6 +169,7 @@ public class WIDLoader {
 							for (WorkItemDefinition wid : widMap.values()) {
 								String icon = wid.getIcon();
 								getJarFileIcon(jar, icon);
+								((WorkItemDefinitionImpl)wid).setDefinitionFile(jarFile.getAbsoluteFile());
 							}
 							classpathWIDs.putAll(widMap);
 							is.close();
