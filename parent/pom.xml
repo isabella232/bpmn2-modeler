@@ -31,7 +31,7 @@
 	<properties>
 		<tycho-version>0.21.0</tycho-version>
 		<tycho-extras-version>${tycho-version}</tycho-extras-version>
-		<BUILD_ALIAS>CR1</BUILD_ALIAS>
+		<BUILD_ALIAS>CR2</BUILD_ALIAS>
 	</properties>
 
 	<profiles>
