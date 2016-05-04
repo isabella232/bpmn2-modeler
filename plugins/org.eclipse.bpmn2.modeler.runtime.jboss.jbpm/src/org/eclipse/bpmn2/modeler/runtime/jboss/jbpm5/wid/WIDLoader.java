@@ -3,11 +3,8 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -113,12 +110,14 @@ public class WIDLoader {
 	
 	private void getProjectFileWIDs(IFile file) throws CoreException, IOException, WIDException {
 		InputStream is = file.getContents();
-		String content = inputStreamToString(is,null);
+		String content = inputStreamToString(is);
 		HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
 		for (WorkItemDefinition wid : widMap.values()) {
 			String icon = wid.getIcon();
-			getProjectFileIcon(file, icon);
-			((WorkItemDefinitionImpl)wid).setDefinitionFile(file.getFullPath().toFile());
+			if (icon!=null && !icon.isEmpty()) {
+				getProjectFileIcon(file, icon);
+				((WorkItemDefinitionImpl)wid).setDefinitionFile(file.getFullPath().toFile());
+			}
 		}
 		projectWIDs.putAll(widMap);
 	}
@@ -164,7 +163,7 @@ public class WIDLoader {
 				    if (name.endsWith(".wid") || name.endsWith(".conf")) {
 				    	is = jar.getInputStream(entry);
 						if (is!=null) {
-							String content = inputStreamToString(is,null);
+							String content = inputStreamToString(is);
 							HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
 							for (WorkItemDefinition wid : widMap.values()) {
 								String icon = wid.getIcon();
@@ -230,11 +229,9 @@ public class WIDLoader {
         return null;
     }
 
-	public static String inputStreamToString(InputStream inputStream, Charset charset) throws IOException {
-		if (charset==null)
-			charset = StandardCharsets.UTF_8;
+	public static String inputStreamToString(InputStream inputStream) throws IOException {
 	    StringBuilder builder = new StringBuilder();
-	    InputStreamReader reader = new InputStreamReader(inputStream, charset);
+	    InputStreamReader reader = new InputStreamReader(inputStream);
 	    char[] buffer = new char[BUFFER_SIZE];
 	    int length;
 	    while ((length = reader.read(buffer)) != -1) {
