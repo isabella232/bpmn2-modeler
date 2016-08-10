@@ -18,6 +18,8 @@ import java.util.List;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
+import org.eclipse.bpmn2.CallChoreography;
+import org.eclipse.bpmn2.CallConversation;
 import org.eclipse.bpmn2.CallableElement;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Import;
@@ -98,7 +100,7 @@ public class ImportUtil {
 		else if (IMPORT_TYPE_JAVA.equals(type))
 			kind = IMPORT_KIND_JAVA;
 		else if (IMPORT_TYPE_BPMN2.equals(type))
-			kind = "bpmn"; //$NON-NLS-1$
+			kind = IMPORT_KIND_BPMN2; //$NON-NLS-1$
 		else {
 			throw new IllegalArgumentException("Unsupported Import type: "+type); //$NON-NLS-1$
 		}
@@ -533,7 +535,7 @@ public class ImportUtil {
 	
 				imp = createBpmn2Object(definitions, Import.class);
 				imp.setImportType(IMPORT_TYPE_WSDL);
-				imp.setLocation(makeURIRelative(resource.getURI(), wsdlDefinition.getLocation()));
+				imp.setLocation(wsdlDefinition.getLocation());
 				imp.setNamespace(wsdlDefinition.getTargetNamespace());
 			}
 			else if (importObject instanceof XSDSchema){
@@ -542,7 +544,7 @@ public class ImportUtil {
 				
 				imp = createBpmn2Object(definitions, Import.class);
 				imp.setImportType(IMPORT_TYPE_XML_SCHEMA);
-				imp.setLocation(makeURIRelative(resource.getURI(), schema.getSchemaLocation()));
+				imp.setLocation(schema.getSchemaLocation());
 				imp.setNamespace(schema.getTargetNamespace());
 			}
 			else if (importObject instanceof IType) {
@@ -564,7 +566,7 @@ public class ImportUtil {
 				
 				imp = createBpmn2Object(definitions, Import.class);
 				imp.setImportType(IMPORT_TYPE_BPMN2);
-				imp.setLocation(makeURIRelative(resource.getURI(), defs.eResource().getURI().toString()));
+				imp.setLocation(defs.eResource().getURI().toString());
 				imp.setNamespace(defs.getTargetNamespace());
 			}
 
@@ -642,13 +644,6 @@ public class ImportUtil {
 		else if (importObject instanceof Definitions) {
 			// what to do here?
 		}
-	}
-
-	public static String makeURIRelative(URI baseURI, String s) {
-		// convert platform URI to a relative URI string
-		URI uri = URI.createURI(s);
-		uri = uri.deresolve(baseURI, false, true, true);
-		return uri.toString();
 	}
 	
 	/**
@@ -750,7 +745,33 @@ public class ImportUtil {
 			}
 			
 			if (IMPORT_TYPE_BPMN2.equals(type)) {
-				// TODO: what objects need to be destroyed? Interface maybe? 
+				Definitions impDefinitions = ModelUtil.getDefinitions(imp.eResource());
+				if (impDefinitions!=null) {
+					ResourceSet rs =  imp.eResource().getResourceSet();
+					Resource impResource = rs.getResource(URI.createURI(imp.getLocation()), true);
+					TreeIterator<EObject> iter = impDefinitions.eAllContents();
+					while (iter.hasNext()) {
+						EObject o = iter.next();
+						if (o instanceof CallActivity) {
+							CallActivity ca = (CallActivity) o;
+							if (ca.getCalledElementRef()!=null
+									&& ca.getCalledElementRef().eResource()==impResource)
+								ca.setCalledElementRef(null);
+						}
+						else if (o instanceof CallConversation) {
+							CallConversation cc = (CallConversation) o;
+							if (cc.getCalledCollaborationRef()!=null
+									&& cc.getCalledCollaborationRef().eResource()==impResource)
+								cc.setCalledCollaborationRef(null);
+						}
+						else if (o instanceof CallChoreography) {
+							CallChoreography cc = (CallChoreography) o;
+							if (cc.getCalledChoreographyRef()!=null
+									&& cc.getCalledChoreographyRef().eResource()==impResource)
+								cc.setCalledChoreographyRef(null);
+						}
+					}
+				}
 			}
 			definitions.getImports().remove(imp);
 		}

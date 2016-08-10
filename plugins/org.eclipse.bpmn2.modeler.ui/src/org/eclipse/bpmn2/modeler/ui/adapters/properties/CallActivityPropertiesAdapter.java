@@ -90,9 +90,15 @@ public class CallActivityPropertiesAdapter extends ActivityPropertiesAdapter<Cal
 					for (Import imp : imports) {
 						if (ImportUtil.IMPORT_TYPE_BPMN2.equals(imp.getImportType())) {
 							// load the process file and look for callable elements
+							Definitions importDefs = null;
 							Object importedObject = importer.loadImport(imp);
 							if (importedObject instanceof DocumentRoot) {
-								Definitions importDefs = ((DocumentRoot)importedObject).getDefinitions();
+								importDefs = ((DocumentRoot)importedObject).getDefinitions();
+							}
+							else if (importedObject instanceof Definitions) {
+								importDefs = (Definitions)importedObject;
+							}
+							if (importDefs!=null) {
 								for (RootElement elem : importDefs.getRootElements()) {
 									if (elem instanceof CallableElement) {
 										label = ExtendedPropertiesProvider.getTextValue(elem) + " (" + imp.getLocation() + ")"; //$NON-NLS-1$ //$NON-NLS-2$

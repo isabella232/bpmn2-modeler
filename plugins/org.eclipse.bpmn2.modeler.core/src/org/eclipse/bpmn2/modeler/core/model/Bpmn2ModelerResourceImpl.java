@@ -157,7 +157,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_OutMessageRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ErrorRefs());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
-		qnameMap.add(Bpmn2Package.eINSTANCE.getCallConversation_CalledCollaborationRef());
+//		qnameMap.add(Bpmn2Package.eINSTANCE.getCallConversation_CalledCollaborationRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_InnerConversationNodeRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_OuterConversationNodeRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationLink_SourceRef());
@@ -176,7 +176,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_InnerParticipantRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_OuterParticipantRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getCallableElement_SupportedInterfaceRefs());
-		qnameMap.add(Bpmn2Package.eINSTANCE.getCallActivity_CalledElementRef());
+//		qnameMap.add(Bpmn2Package.eINSTANCE.getCallActivity_CalledElementRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataInputRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataOutputRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_OneBehaviorEventRef());
@@ -207,7 +207,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_ParticipantRefs());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_InitiatingParticipantRef());
 		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyTask_MessageFlowRef());
-		qnameMap.add(Bpmn2Package.eINSTANCE.getCallChoreography_CalledChoreographyRef());
+//		qnameMap.add(Bpmn2Package.eINSTANCE.getCallChoreography_CalledChoreographyRef());
 		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNPlane_BpmnElement());
 		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_BpmnElement());
 		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_ChoreographyActivityShape());
