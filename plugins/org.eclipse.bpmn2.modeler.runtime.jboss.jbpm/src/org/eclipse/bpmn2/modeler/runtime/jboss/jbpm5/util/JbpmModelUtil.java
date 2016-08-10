@@ -333,9 +333,9 @@ public class JbpmModelUtil {
 	
 	/**
 	 * This method returns a string representation for a "data type". This is intended to
-	 * be used to interpret the various objects in the map returned by collectAllDataTypes().
+	 * be used to interpret the various objects in the map returned by getChoiceOfValues().
 	 * 
-	 * @param value - one of the Object values in the map returned by collectAllDataTypes().
+	 * @param value - one of the Object values in the map returned by getChoiceOfValues().
 	 * @return a string representation of the data type
 	 */
 	public static String getDataType(Object value) {
@@ -360,13 +360,13 @@ public class JbpmModelUtil {
 	
 	/**
 	 * This method returns an ItemDefinition object for a "data type". This is intended to
-	 * be used to interpret the various objects in the map returned by collectAllDataTypes().
+	 * be used to interpret the various objects in the map returned by getChoiceOfValues().
 	 * 
 	 * NOTE: This method will create an ItemDefinition if it does not already exist.
 	 * 
 	 * @param be - a context EObject used to search for ItemDefinitions, and to create
 	 *                 new ItemDefinitions if necessary.
-	 * @param value - one of the Object values in the map returned by collectAllDataTypes().
+	 * @param value - one of the Object values in the map returned by getChoiceOfValues().
 	 * @return an ItemDefinition for the data type
 	 */
 	public static ItemDefinition getDataType(EObject context, Object value) {

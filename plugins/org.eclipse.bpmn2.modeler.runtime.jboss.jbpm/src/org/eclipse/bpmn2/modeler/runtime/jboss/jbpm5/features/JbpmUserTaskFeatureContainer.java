@@ -34,13 +34,13 @@ public class JbpmUserTaskFeatureContainer extends UserTaskFeatureContainer {
 				
 				for (DataInput input : userTask.getIoSpecification().getDataInputs()) {
 					if ("Priority".equalsIgnoreCase(input.getName())) { //$NON-NLS-1$
-						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "Integer")); //$NON-NLS-1$
+						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "java.lang.Integer")); //$NON-NLS-1$
 					}
 					else if ("Skippable".equalsIgnoreCase(input.getName())) { //$NON-NLS-1$
-						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "Boolean")); //$NON-NLS-1$
+						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "java.lang.Boolean")); //$NON-NLS-1$
 					}
 					else {
-						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "String")); //$NON-NLS-1$
+						input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), "java.lang.String")); //$NON-NLS-1$
 					}
 				}
 				return userTask;

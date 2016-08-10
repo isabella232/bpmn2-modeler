@@ -1572,11 +1572,16 @@
 		</toolPalette>
 		
 		<typeLanguage name="Java Types" uri="http://www.java.com/javaTypes" prefix="java">
-			<type name="Boolean" qname="Boolean"/>
-			<type name="Float" qname="Float"/>
-			<type name="Integer" qname="Integer"/>
-			<type name="String" qname="String"/>
-			<type name="Object" qname="Object"/>
+			<type name="Boolean" qname="java.lang.Boolean"/>
+			<type name="Byte" qname="java.lang.Byte"/>
+			<type name="Character" qname="java.lang.Character"/>
+			<type name="Float" qname="java.lang.Float"/>
+			<type name="Integer" qname="java.lang.Integer"/>
+			<type name="Long" qname="java.lang.Long"/>
+			<type name="Short" qname="java.lang.Short"/>
+			<type name="Double" qname="java.lang.Double"/>
+			<type name="String" qname="java.lang.String"/>
+			<type name="Object" qname="java.lang.Object"/>
 		</typeLanguage>
 		<expressionLanguage name="mvel" uri="http://www.mvel.org/2.0"/>
 		<expressionLanguage name="Java" uri="http://www.java.com/java"/>
