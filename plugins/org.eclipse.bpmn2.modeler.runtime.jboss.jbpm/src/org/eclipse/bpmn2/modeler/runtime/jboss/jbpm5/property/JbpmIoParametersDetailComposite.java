@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.ReceiveTask;
 import org.eclipse.bpmn2.SendTask;
+import org.eclipse.bpmn2.ServiceTask;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.runtime.BaseRuntimeExtensionDescriptor;
@@ -118,6 +119,25 @@ public class JbpmIoParametersDetailComposite extends IoParametersDetailComposite
 						return true;
 					}
 				}
+			}
+		}
+		
+		if (activity instanceof SendTask) {
+			if ("Message".equals(name)) {
+				return true;
+			}
+		}
+		else if (activity instanceof ReceiveTask) {
+			if ("Message".equals(name)) {
+				return true;
+			}
+		}
+		else if (activity instanceof ServiceTask) {
+			if ("Parameter".equals(name)) {
+				return true;
+			}
+			else if ("Result".equals(name)) {
+				return true;
 			}
 		}
 		return false;
