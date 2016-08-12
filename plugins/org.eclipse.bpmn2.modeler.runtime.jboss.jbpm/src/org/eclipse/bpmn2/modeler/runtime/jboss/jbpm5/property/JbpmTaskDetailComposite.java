@@ -16,22 +16,22 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
-import org.eclipse.bpmn2.DataInputAssociation;
+import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.InputSet;
+import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ItemKind;
+import org.eclipse.bpmn2.OutputSet;
 import org.eclipse.bpmn2.PotentialOwner;
 import org.eclipse.bpmn2.ResourceAssignmentExpression;
 import org.eclipse.bpmn2.ResourceRole;
 import org.eclipse.bpmn2.Task;
-import org.eclipse.bpmn2.UserTask;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.features.CustomElementFeatureContainer;
@@ -40,23 +40,28 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertiesCompositeFactory;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.IPropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeContentProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.BooleanObjectEditor;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.IntObjectEditor;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.NCNameObjectEditor;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
+//import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ButtonObjectEditor;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ReadonlyTextObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextObjectEditor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParameterMappingColumn;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -64,6 +69,54 @@ import org.eclipse.swt.widgets.Composite;
  *
  */
 public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
+
+	class DataInputOutputEditor extends ReadonlyTextObjectEditor {
+
+		private String name;
+		private Task task;
+		
+		public DataInputOutputEditor(Task task, ItemAwareElement parameter) {
+			super (JbpmTaskDetailComposite.this, parameter,
+					parameter instanceof DataInput ? PACKAGE.getDataInput_Name() : PACKAGE.getDataOutput_Name());
+			name = (String) parameter.eGet(this.feature);
+			this.task = task;
+		}
+		
+		@Override
+		protected String getText() {
+			EStructuralFeature f = object instanceof DataInput ?
+					PACKAGE.getActivity_DataInputAssociations() :
+					PACKAGE.getActivity_DataOutputAssociations();
+			IoParameterMappingColumn col = new IoParameterMappingColumn(task,f);
+			return col.getText(object);
+		}
+
+		@Override
+		protected void buttonClicked(int buttonId) {
+			ObjectEditingDialog dialog = new ObjectEditingDialog(getDiagramEditor(), object);
+			IPropertiesCompositeFactory factory = new DefaultPropertiesCompositeFactory() {
+				@Override
+				public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, TargetRuntime targetRuntime, int style) {
+					JbpmDataAssociationDetailComposite composite = new JbpmDataAssociationDetailComposite(parent, SWT.NONE);
+					if (object instanceof DataInput)
+						composite.setShowToGroup(false);
+					else
+						composite.setShowFromGroup(false);
+					return composite;
+				}
+			};
+			if (object instanceof DataInput)
+				dialog.setTitle("Edit Source for Input Parameter \""+ModelUtil.toCanonicalString(name)+"\"");
+			else
+				dialog.setTitle("Edit Destination for Output Parameter \""+ModelUtil.toCanonicalString(name)+"\"");
+			dialog.setCompositeFactory(factory);
+			if (dialog.open() == Window.OK) {
+				// this just forces an update of the editor text field
+				setValue(object.eGet(feature));
+			}
+		}
+
+	};
 
 	/**
 	 * @param section
@@ -106,6 +159,20 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	 */
 	protected void createInputParameterBindings(final Task task) {
 		
+		// Does the WID for this Task define a Work Item Editor dialog?
+		// If so, do not display the WID parameters in this Property tab.
+		if (JbpmCustomTaskFeatureContainer.getWorkItemEditor(task)!=null) {
+			// TODO:
+			// 1. create a New Work Item Editor wizard that copies the required
+			// java interfaces and a sample implementation into the user's
+			// java project.
+			// 2. hook the ButtonObjectEditor into an action that pops up
+			// the Work Item Editor.
+//			ButtonObjectEditor button = new ButtonObjectEditor(this, task, null);
+//			button.createControl(this.getAttributesParent(), "Edit Work Item Parameters");
+//			return;
+		}
+    	
 		// Get the Model Extension Descriptor for this Custom Task.
 		// This will contain the Data Inputs and Outputs that were
 		// defined for the Custom Task either in the plugin.xml
@@ -136,7 +203,6 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 			// (i.e. the I/O Parameter mappings) and create Object Editors for them.
 			// If the Task does not define these parameter mappings, create temporary objects
 			// for the editors (these will go away if they are not touched by the user)
-			List<Property> props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
 			InputOutputSpecification ioSpec = task.getIoSpecification();
 			if (ioSpec==null) {
 				ioSpec = createModelObject(InputOutputSpecification.class);
@@ -145,136 +211,130 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 						ioSpec);
 			}
 			
-            Definitions definitions = ModelUtil.getDefinitions(task);
+			List<Property> props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
 			for (Property property : props) {
 				
 				// this will become the label for the Object Editor
 				final String name = property.getFirstStringValue();
 				// the input parameter
-				DataInput parameter = null;
-				// the DataInputAssociation
-				DataAssociation association = null;
-				for (DataInput di : ioSpec.getDataInputs()) {
-					if (name.equals(di.getName())) {
-						// this is the one!
-						parameter = di;
-						for (DataAssociation da : task.getDataInputAssociations()) {
-							if (da.getTargetRef() == di) {
-								association = da;
-								break;
-							}
-						}
-						break;
-					}
-				}
+				ItemAwareElement parameter = createInputOutputParameter(task, ioSpec, name, true);
 				
-				// create the DataInput element (the parameter) if needed
-				if (parameter==null) {
-                    ItemDefinition itemDef = createModelObject(ItemDefinition.class);
-                    itemDef.setItemKind(ItemKind.INFORMATION);
-                    itemDef.setStructureRef( ModelUtil.createStringWrapper("Object") ); //$NON-NLS-1$
-                    InsertionAdapter.add(definitions,
-                            PACKAGE.getDefinitions_RootElements(),
-                            itemDef);
-                    
-					parameter = createModelObject(DataInput.class);
-					parameter.setName(name);
-					parameter.setItemSubjectRef(itemDef);
-					InsertionAdapter.add(ioSpec,
-							PACKAGE.getInputOutputSpecification_DataInputs(),
-							parameter);
-					
-					// create the InputSet if needed
-					InputSet inputSet = null;
-					if (ioSpec.getInputSets().size()==0) {
-						inputSet = createModelObject(InputSet.class);
-						InsertionAdapter.add(ioSpec,
-								PACKAGE.getInputOutputSpecification_InputSets(),
-								inputSet);
-					}
-					else
-						inputSet = ioSpec.getInputSets().get(0);
-					// add the parameter to the InputSet also
-					InsertionAdapter.add(inputSet,
-							PACKAGE.getInputSet_DataInputRefs(),
-							parameter);
-				}
+				// create a read-only text field and object editor button for this parameter
+				DataInputOutputEditor editor = new DataInputOutputEditor(task, parameter);
+				editor.createControl(getAttributesParent(),ModelUtil.toCanonicalString(name));
+			}
+			
+			props = med.getProperties("ioSpecification/dataOutputs/name"); //$NON-NLS-1$
+			for (Property property : props) {
 				
-				// create the DataInputAssociation if needed
-				if (association == null) {
-					association = createModelObject(DataInputAssociation.class);
-					association.setTargetRef(parameter);
-					InsertionAdapter.add(task,
-							PACKAGE.getActivity_DataInputAssociations(),
-							association);
-				}
+				// this will become the label for the Object Editor
+				final String name = property.getFirstStringValue();
+				// the input parameter
+				ItemAwareElement parameter = createInputOutputParameter(task, ioSpec, name, false);
 				
-				// create an MultipleAssignments and FormalExpression if needed
-				// the "To" expression is the input parameter,
-				// the "From" expression body is the target of the Object Editor
-				FormalExpression fromExpression = null;
-				Assignment assignment = null;
-				if (association.getAssignment().size() == 1) {
-					assignment = (Assignment) association.getAssignment().get(0);
-					fromExpression = (FormalExpression) assignment.getFrom();
-				}
-				if (assignment==null) {
-					assignment = createModelObject(Assignment.class);
-					FormalExpression toExpression = createModelObject(FormalExpression.class);
-					toExpression.setBody(parameter.getId());
-					assignment.setTo(toExpression);
-					InsertionAdapter.add(association, PACKAGE.getDataAssociation_Assignment(), assignment);
-				}
-				if (fromExpression==null) {
-					fromExpression = createModelObject(FormalExpression.class);
-					InsertionAdapter.add(assignment, PACKAGE.getAssignment_From(), fromExpression);
-				}
-				
-				// create the Object Editor for the "From" expression body:
-				// the data type is obtained from the DataInput <property> element from plugin.xml
-				EAttribute attribute = PACKAGE.getFormalExpression_Body();
-				String dataType = property.type;
-				ObjectEditor editor = null;
-				if ("EInt".equals(dataType)) { //$NON-NLS-1$
-					editor = new IntObjectEditor(this,fromExpression,attribute);
-				}
-				else if ("EBoolean".equals(dataType)) { //$NON-NLS-1$
-					editor = new BooleanObjectEditor(this,fromExpression,attribute) {
-						@Override
-						public Boolean getValue() {
-							if (task instanceof UserTask && "Skippable".equals(name)) { //$NON-NLS-1$
-								// Sheesh! All this just to set the default value of
-								// the User Task "Skippable" Data Input to true by default!
-								UserTask ut = (UserTask) task;
-								for (DataInput di : ut.getIoSpecification().getDataInputs()) {
-									if ("Skippable".equals(di.getName())) { //$NON-NLS-1$
-										for (DataInputAssociation dia : ut.getDataInputAssociations()) {
-											if (dia.getTargetRef() == di) {
-												if (dia.getAssignment().size()==0) {
-													return Boolean.TRUE;
-												}
-											}
-										}
-									}
-								}
-							}
-							return super.getValue();
-						}
-					};
-				}
-				else if ("ID".equals(dataType)) { //$NON-NLS-1$
-					editor = new NCNameObjectEditor(this,fromExpression,attribute);
-				}
-				else {
-					editor = new TextObjectEditor(this,fromExpression,attribute);
-					boolean isCDATA = "CDATA".equals(dataType); //$NON-NLS-1$
-					((TextObjectEditor)editor).setMultiLine(isCDATA);
-				}
+				// create a read-only text field and object editor button for this parameter
+				DataInputOutputEditor editor = new DataInputOutputEditor(task, parameter);
 				editor.createControl(getAttributesParent(),ModelUtil.toCanonicalString(name));
 			}
 		}
 	}
 
+	private ItemAwareElement createInputOutputParameter(Task task, InputOutputSpecification ioSpec, String name, boolean isInput) {
+        Definitions definitions = ModelUtil.getDefinitions(task);
+
+		ItemAwareElement parameter = null;
+		DataAssociation association = null;
+		if (isInput) {
+			for (DataInput input : ioSpec.getDataInputs()) {
+				if (name.equals(input.getName())) {
+					// this is the one!
+					parameter = input;
+					for (DataAssociation da : task.getDataInputAssociations()) {
+						if (da.getTargetRef() == input) {
+							association = da;
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+		else {
+			for (DataOutput output : ioSpec.getDataOutputs()) {
+				if (name.equals(output.getName())) {
+					// this is the one!
+					parameter = output;
+					for (DataAssociation da : task.getDataOutputAssociations()) {
+						for (ItemAwareElement e : da.getSourceRef()) {
+							if (e == output) {
+								association = da;
+								break;
+							}
+						}
+						if (association!=null)
+							break;
+					}
+					break;
+				}
+			}
+		}
+		if (parameter!=null)
+			return parameter;
+		
+        ItemDefinition itemDef = createModelObject(ItemDefinition.class);
+        itemDef.setItemKind(ItemKind.INFORMATION);
+        itemDef.setStructureRef( ModelUtil.createStringWrapper("Object") ); //$NON-NLS-1$
+        InsertionAdapter.add(definitions,
+                PACKAGE.getDefinitions_RootElements(),
+                itemDef);
+        
+		parameter = createModelObject(isInput ? DataInput.class : DataOutput.class);
+		if (isInput)
+			((DataInput)parameter).setName(name);
+		else
+			((DataOutput)parameter).setName(name);
+		
+		parameter.setItemSubjectRef(itemDef);
+		InsertionAdapter.add(ioSpec,
+				isInput ? PACKAGE.getInputOutputSpecification_DataInputs() : PACKAGE.getInputOutputSpecification_DataOutputs(),
+				parameter);
+		
+		// create the InputSet if needed
+		if (isInput) {
+			InputSet inputSet = null;
+			if (ioSpec.getInputSets().size()==0) {
+				inputSet = createModelObject(InputSet.class);
+				InsertionAdapter.add(ioSpec,
+						PACKAGE.getInputOutputSpecification_InputSets(),
+						inputSet);
+			}
+			else
+				inputSet = ioSpec.getInputSets().get(0);
+			// add the parameter to the InputSet also
+			InsertionAdapter.add(inputSet,
+					PACKAGE.getInputSet_DataInputRefs(),
+					parameter);
+		}
+		else {
+			OutputSet outputSet = null;
+			if (ioSpec.getOutputSets().size()==0) {
+				outputSet = createModelObject(OutputSet.class);
+				InsertionAdapter.add(ioSpec,
+						PACKAGE.getInputOutputSpecification_OutputSets(),
+						outputSet);
+			}
+			else
+				outputSet = ioSpec.getOutputSets().get(0);
+			// add the parameter to the OutputSet also
+			InsertionAdapter.add(outputSet,
+					PACKAGE.getOutputSet_DataOutputRefs(),
+					parameter);
+		}
+		
+
+		return parameter;
+	}
+	
 	@Override
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
 		if (feature.getName().equals("resources")) { //$NON-NLS-1$

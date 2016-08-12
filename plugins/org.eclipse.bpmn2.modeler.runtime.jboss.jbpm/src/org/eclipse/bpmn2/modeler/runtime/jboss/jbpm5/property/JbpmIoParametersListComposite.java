@@ -18,11 +18,14 @@ import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.ReceiveTask;
 import org.eclipse.bpmn2.SendTask;
 import org.eclipse.bpmn2.ServiceTask;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.features.CustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeContentProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.runtime.BaseRuntimeExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParameterNameColumn;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParametersDetailComposite;
@@ -112,7 +115,23 @@ public class JbpmIoParametersListComposite extends IoParametersListComposite {
 					
 					Object elements[] = super.getElements(inputElement);
 					List<Property> props = null;
-					ModelExtensionDescriptor med = BaseRuntimeExtensionDescriptor.getDescriptor(activity, ModelExtensionDescriptor.class);
+					ModelExtensionDescriptor med = null;
+					ExtendedPropertiesAdapter<?> adapter = ExtendedPropertiesAdapter.adapt(activity);
+					if (adapter!=null) {
+						// look for it in the property adapter first
+						med = adapter.getProperty(ModelExtensionDescriptor.class);
+					}
+
+					if (med==null) {
+						// not found? get the Custom Task ID from the Task object
+						String id = CustomElementFeatureContainer.findId(activity);
+						if (id!=null) {
+							// and look it up in the Target Runtime's list of
+							// Custom Task Descriptors
+					    	TargetRuntime rt = TargetRuntime.getRuntime(activity);
+					    	med = rt.getCustomTask(id);
+						}
+					}
 					if (med!=null) {
 						if (JbpmIoParametersListComposite.this.isInput)
 							props = med.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$

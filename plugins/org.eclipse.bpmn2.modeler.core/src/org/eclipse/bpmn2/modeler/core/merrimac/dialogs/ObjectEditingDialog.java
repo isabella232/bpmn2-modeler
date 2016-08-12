@@ -63,13 +63,14 @@ public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 	
 	@Override
 	public int open() {
-		title = null;
-		if (object!=null)
-			title = NLS.bind(Messages.ObjectEditingDialog_Edit, ExtendedPropertiesProvider.getLabel(object));
+		if (title == null || title.isEmpty()) {
+			if (object!=null)
+				title = NLS.bind(Messages.ObjectEditingDialog_Edit, ExtendedPropertiesProvider.getLabel(object));
+		}
 		create();
 		if (cancel)
 			return Window.CANCEL;
-		if (title==null)
+		if (title==null || title.isEmpty())
 			title = NLS.bind(Messages.ObjectEditingDialog_Create, ExtendedPropertiesProvider.getLabel(object));
 		return super.open();
 	}

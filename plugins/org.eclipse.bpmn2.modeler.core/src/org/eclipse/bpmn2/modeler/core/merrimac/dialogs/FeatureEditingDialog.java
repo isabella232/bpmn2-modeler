@@ -105,7 +105,7 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 	}
 	
 	@Override
-	protected String getTitle() {
+	public String getTitle() {
 		if (createNew)
 			title = NLS.bind(Messages.FeatureEditingDialog_Create, ExtendedPropertiesProvider.getLabel(newObject));
 		else

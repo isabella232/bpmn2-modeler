@@ -27,6 +27,7 @@ import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.DataAssociationPropertiesAdapter;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
@@ -65,6 +66,8 @@ public class IoParameterMappingColumn extends TableColumn {
 						text = ""; //$NON-NLS-1$
 					else
 						text += ", "; //$NON-NLS-1$
+					// TODO: add CONTEXT_TEXT to Properties
+//					text += DataAssociationPropertiesAdapter.getContextText(e) + ExtendedPropertiesProvider.getTextValue(e);
 					text += ExtendedPropertiesProvider.getTextValue(e);
 				}
 			else {
@@ -76,10 +79,13 @@ public class IoParameterMappingColumn extends TableColumn {
 					for ( Assignment assign : da.getAssignment()) {
 						FormalExpression expr  = getTargetExpression(da, assign);
 						String body = ExtendedPropertiesProvider.getTextValue(expr);
-						if (text2==null)
-							text2 = "\"" + body + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-						else
-							text2 += ",\n" + body; //$NON-NLS-1$
+						if (body!=null && !body.isEmpty()) {
+							body = body.replaceAll("\n", "\\\\n");
+							if (text2==null)
+								text2 = "\"" + body + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+							else
+								text2 += ",\n" + body; //$NON-NLS-1$
+						}
 					}
 					if (text==null)
 						text = text2;
@@ -143,10 +149,10 @@ public class IoParameterMappingColumn extends TableColumn {
 	private List<ItemAwareElement> getSourceElements(DataAssociation da) {
 		List<ItemAwareElement> result = new ArrayList<ItemAwareElement>();
 		if (da instanceof DataOutputAssociation) {
-			if (da.getSourceRef().size()==1)
+			if (da.getSourceRef().size()>0)
 				result.addAll(da.getSourceRef());
 		}
-		else if (da instanceof DataInputAssociation) {
+		else if (da instanceof DataInputAssociation && da.getTargetRef()!=null) {
 			result.add(da.getTargetRef());
 		}
 		return result;
@@ -155,10 +161,10 @@ public class IoParameterMappingColumn extends TableColumn {
 	private List<ItemAwareElement> getTargetElements(DataAssociation da) {
 		List<ItemAwareElement> result = new ArrayList<ItemAwareElement>();
 		if (da instanceof DataInputAssociation) {
-			if (da.getSourceRef().size()==1)
+			if (da.getSourceRef().size()>0)
 				result.addAll(da.getSourceRef());
 		}
-		else if (da instanceof DataOutputAssociation) {
+		else if (da instanceof DataOutputAssociation && da.getTargetRef()!=null) {
 			result.add(da.getTargetRef());
 		}
 		return result;

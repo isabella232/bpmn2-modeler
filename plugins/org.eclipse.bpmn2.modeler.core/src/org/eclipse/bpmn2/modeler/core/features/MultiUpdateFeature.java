@@ -123,7 +123,7 @@ public class MultiUpdateFeature extends AbstractUpdateFeature {
 		
 		int i = 0;
 		for (IUpdateFeature f : features) {
-			if ((updateNeeded[i] || forceUpdate) && f.update(context)) {
+			if ((updateNeeded[i] || forceUpdate) && canUpdate[i] && f.update(context)) {
 				updated = true;
 			}
 			++i;

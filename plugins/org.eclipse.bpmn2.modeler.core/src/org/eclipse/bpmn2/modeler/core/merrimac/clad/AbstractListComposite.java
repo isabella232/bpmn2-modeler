@@ -538,27 +538,11 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					ObjectEditingDialog dialog = new ObjectEditingDialog(getDiagramEditor(), o);
 					// Our clients can provide their own Detail panels, so we'll pass along a IPropertiesCompositeFactory
 					// to the ObjectEditingDialog and delegate construction of the Detail Composite to our clients.
-					IPropertiesCompositeFactory factory = new IPropertiesCompositeFactory() {
-						@Override
-						public AbstractDetailComposite createDetailComposite(Class eClass, AbstractBpmn2PropertySection section, TargetRuntime targetRuntime) {
-							return null;
-						}
+					IPropertiesCompositeFactory factory = new DefaultPropertiesCompositeFactory() {
 						@Override
 						public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, TargetRuntime targetRuntime, int style) {
 							// this is the only one that's required!
 							return AbstractListComposite.this.createDetailComposite(eClass, parent, style);
-						}
-						@Override
-						public AbstractListComposite createListComposite(Class eClass, AbstractBpmn2PropertySection section, TargetRuntime targetRuntime) {
-							return null;
-						}
-						@Override
-						public AbstractListComposite createListComposite(Class eClass, Composite parent, TargetRuntime targetRuntime, int style) {
-							return null;
-						}
-						@Override
-						public AbstractDialogComposite createDialogComposite(EClass eClass, Composite parent, TargetRuntime targetRuntime, int style) {
-							return null;
 						}
 					};
 					

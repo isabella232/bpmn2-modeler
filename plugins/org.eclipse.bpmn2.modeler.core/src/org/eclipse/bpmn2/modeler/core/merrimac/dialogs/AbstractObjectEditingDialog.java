@@ -137,8 +137,12 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	abstract protected Composite createDialogContent(Composite parent);
 	abstract protected String getPreferenceKey();
 	
-	protected String getTitle() {
+	public String getTitle() {
 		return title;
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
 	}
 	
 	protected void addControlListener() {

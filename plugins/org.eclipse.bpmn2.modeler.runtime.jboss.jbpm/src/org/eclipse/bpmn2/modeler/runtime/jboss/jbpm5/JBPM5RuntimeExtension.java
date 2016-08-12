@@ -120,10 +120,12 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	}
 
 	public WorkItemDefinition getWorkItemDefinition(String taskName) {
-		List<WorkItemDefinition> wids = getWorkItemDefinitions();
-		for (WorkItemDefinition wid : wids) {
-			if (taskName.equals(wid.getName())) {
-				return wid;
+		if (taskName!=null && !taskName.isEmpty()) {
+			List<WorkItemDefinition> wids = getWorkItemDefinitions();
+			for (WorkItemDefinition wid : wids) {
+				if (taskName.equals(wid.getName())) {
+					return wid;
+				}
 			}
 		}
 		return null;
@@ -133,30 +135,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	public void notify(LifecycleEvent event) {
         TargetRuntime targetRuntime = event.targetRuntime;
 
-		if (event.eventType == EventType.EDITOR_INITIALIZED) {
-			// Register all of our Property Tab Detail overrides here. 
-			PropertiesCompositeFactory.register(Activity.class, JbpmActivityDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(DataInput.class, JbpmDataAssociationDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(DataOutput.class, JbpmDataAssociationDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(Event.class, JbpmCommonEventDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(Gateway.class, JbpmGatewayDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(GlobalType.class, GlobalTypeDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(ImportType.class, JbpmImportTypeDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionListComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(ManualTask.class, JbpmManualTaskDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(Message.class, JbpmMessageDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(Message.class, JbpmMessageListComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(MultiInstanceLoopCharacteristics.class, JbpmMultiInstanceDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(ReceiveTask.class, JbpmReceiveTaskDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(ScriptTask.class, JbpmScriptTaskDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(SendTask.class, JbpmSendTaskDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(SequenceFlow.class, JbpmSequenceFlowDetailComposite.class, targetRuntime);
-	        PropertiesCompositeFactory.register(Task.class, JbpmTaskDetailComposite.class, targetRuntime);
-			PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionDetailComposite.class, targetRuntime);
-			PropertiesCompositeFactory.register(Interface.class, JbpmInterfaceDetailComposite.class, targetRuntime);
-			PropertiesCompositeFactory.register(Operation.class, JbpmOperationDetailComposite.class, targetRuntime);
-			PropertiesCompositeFactory.register(Expression.class, JbpmExpressionDetailComposite.class, targetRuntime);
-
+		if (event.eventType == EventType.EDITOR_STARTUP) {
 			// TODO: if file was opened from a Guvnor Repository view (or git in jBPM 6)
 			// we may want to explicitly make the editor read-only
 	
@@ -220,6 +199,30 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 					e.printStackTrace();
 				}
 			}
+		}
+		else if (event.eventType == EventType.EDITOR_INITIALIZED) {
+			// Register all of our Property Tab Detail overrides here. 
+			PropertiesCompositeFactory.register(Activity.class, JbpmActivityDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(DataInput.class, JbpmDataAssociationDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(DataOutput.class, JbpmDataAssociationDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(Event.class, JbpmCommonEventDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(Gateway.class, JbpmGatewayDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(GlobalType.class, GlobalTypeDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(ImportType.class, JbpmImportTypeDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionListComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(ManualTask.class, JbpmManualTaskDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(Message.class, JbpmMessageDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(Message.class, JbpmMessageListComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(MultiInstanceLoopCharacteristics.class, JbpmMultiInstanceDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(ReceiveTask.class, JbpmReceiveTaskDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(ScriptTask.class, JbpmScriptTaskDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(SendTask.class, JbpmSendTaskDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(SequenceFlow.class, JbpmSequenceFlowDetailComposite.class, targetRuntime);
+	        PropertiesCompositeFactory.register(Task.class, JbpmTaskDetailComposite.class, targetRuntime);
+			PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionDetailComposite.class, targetRuntime);
+			PropertiesCompositeFactory.register(Interface.class, JbpmInterfaceDetailComposite.class, targetRuntime);
+			PropertiesCompositeFactory.register(Operation.class, JbpmOperationDetailComposite.class, targetRuntime);
+			PropertiesCompositeFactory.register(Expression.class, JbpmExpressionDetailComposite.class, targetRuntime);
 		}
 		else if (event.eventType == EventType.BUSINESSOBJECT_CREATED) {
 			EObject object = (EObject) event.target;
@@ -339,7 +342,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	private void createDataAssociations ( Property ioSpecification, CustomTaskDescriptor ct) {
 		Object[] values = ioSpecification.getValues().toArray();
 		int inputCounter = -1;
-//		int outputCounter = -1;
+		int outputCounter = -1;
 		for (int i = 0; i < values.length; i++) {
 			if (values[i] instanceof Property) {
 				Property prop = (Property) values[i];
@@ -351,16 +354,16 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 					dataInputAssociations.getValues().add(targetRef);
 					ct.getProperties().add(dataInputAssociations);
 				}
-//				} else 	if (prop.name.equals("dataOutputs")) {
-//					outputCounter++;
-//					Property dataOutputAssociations = new Property ( "dataOutputAssociations", null);
-//					Property sourceRef = new Property ("sourceRef", null);
-//					sourceRef.ref = "ioSpecification/dataOutputs#" + outputCounter;
-//					dataOutputAssociations.getValues().add(sourceRef);
-////					Property targetRef = new Property ("targetRef", null);
-////					dataOutputAssociations.getValues().add(targetRef);
-//					ct.getProperties().add(dataOutputAssociations);
-//				}
+				else if (prop.name.equals("dataOutputs")) {
+					outputCounter++;
+					Property dataOutputAssociations = new Property (prop, "dataOutputAssociations", null);
+					Property sourceRef = new Property (prop, "sourceRef", null);
+					sourceRef.ref = "ioSpecification/dataOutputs#" + outputCounter;
+					dataOutputAssociations.getValues().add(sourceRef);
+//					Property targetRef = new Property (prop, "targetRef", null);
+//					dataOutputAssociations.getValues().add(targetRef);
+					ct.getProperties().add(dataOutputAssociations);
+				}
 
 			}
 		}
