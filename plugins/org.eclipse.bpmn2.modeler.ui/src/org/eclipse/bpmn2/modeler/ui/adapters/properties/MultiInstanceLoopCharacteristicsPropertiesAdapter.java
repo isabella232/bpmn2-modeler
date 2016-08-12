@@ -138,6 +138,8 @@ public class MultiInstanceLoopCharacteristicsPropertiesAdapter extends ExtendedP
 					else
 						values.addAll(ioSpecification.getDataOutputs());
 				}
+				values.remove(object.getLoopDataInputRef());
+				values.remove(object.getLoopDataOutputRef());
 			}
 
 //			if (container instanceof SubProcess)

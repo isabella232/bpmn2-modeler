@@ -14,6 +14,9 @@
 
 package org.eclipse.bpmn2.modeler.ui.property.tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -447,6 +450,36 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 				messageRef, message);
 	}
 	
+	protected DataInput getDefaultDataInput(Activity activity) {
+		InputOutputSpecification ioSpec = activity.getIoSpecification();
+		if (ioSpec!=null && ioSpec.getDataInputs().size()>0) {
+			return ioSpec.getDataInputs().get(0);
+		}
+		return null;
+	}
+	
+	protected DataOutput getDefaultDataOutput(Activity activity) {
+		InputOutputSpecification ioSpec = activity.getIoSpecification();
+		if (ioSpec!=null && ioSpec.getDataOutputs().size()>0) {
+			return ioSpec.getDataOutputs().get(0);
+		}
+		return null;
+	}
+	
+	protected DataInput createDefaultDataInput(Activity activity) {
+		DataInput input = Bpmn2ModelerFactory.createObject(activity.eResource(), DataInput.class);
+		InputOutputSpecification ioSpec = activity.getIoSpecification();
+		input.setName( DataInputPropertiesAdapter.generateName(ioSpec.getDataInputs()) );
+		return input;
+	}
+	
+	protected DataOutput createDefaultDataOutput(Activity activity) {
+		DataOutput output = Bpmn2ModelerFactory.createObject(activity.eResource(), DataOutput.class);
+		InputOutputSpecification ioSpec = activity.getIoSpecification();
+		output.setName( DataOutputPropertiesAdapter.generateName(ioSpec.getDataOutputs()) );
+		return output;
+	}
+	
 	protected void createMessageAssociations(Composite container, final Activity activity,
 			EReference operationRef, Operation operation,
 			EReference messageRef, Message message
@@ -489,15 +522,14 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		InputOutputSpecification ioSpec = activity.getIoSpecification();
 		if (ioSpec==null) {
 			ioSpec = Bpmn2ModelerFactory.createObject(resource, InputOutputSpecification.class);
-			ModelUtil.setID(ioSpec, resource);
 			if (operationChanged || messageChanged) {
 				activity.setIoSpecification(ioSpec);
 			}
 		}
 		
-		final InputSet inputSet = Bpmn2ModelerFactory.createObject(resource, InputSet.class);
+		InputSet inputSet;
 		if (ioSpec.getInputSets().size()==0) {
-			ModelUtil.setID(inputSet);
+			inputSet = Bpmn2ModelerFactory.createObject(resource, InputSet.class);
 			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
 			{
 				ioSpec.getInputSets().add(inputSet);
@@ -506,10 +538,12 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 				InsertionAdapter.add(ioSpec, Bpmn2Package.eINSTANCE.getInputOutputSpecification_InputSets(), inputSet);
 			}
 		}
+		else
+			inputSet = ioSpec.getInputSets().get(0);
 		
-		final OutputSet outputSet = Bpmn2ModelerFactory.createObject(resource, OutputSet.class);
+		OutputSet outputSet;
 		if (ioSpec.getOutputSets().size()==0) {
-			ModelUtil.setID(outputSet);
+			outputSet = Bpmn2ModelerFactory.createObject(resource, OutputSet.class);
 			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
 			{
 				ioSpec.getOutputSets().add(outputSet);
@@ -518,6 +552,9 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 				InsertionAdapter.add(ioSpec, Bpmn2Package.eINSTANCE.getInputOutputSpecification_OutputSets(), outputSet);
 			}
 		}
+		else
+			outputSet = ioSpec.getOutputSets().get(0);
+		
 		DataInput input = null;
 		DataOutput output = null;
 		Message inMessage = null;
@@ -547,12 +584,9 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 		if (inMessage!=null) {
 			// display the "From" association widgets
 			boolean newInput = false;
-			if (ioSpec.getDataInputs().size()>0) {
-				input = ioSpec.getDataInputs().get(0);
-			}
-			else {
-				input = Bpmn2ModelerFactory.createObject(resource, DataInput.class);
-				input.setName( DataInputPropertiesAdapter.generateName(ioSpec.getDataInputs()) );
+			input = getDefaultDataInput(activity);
+			if (input==null) {
+				input = createDefaultDataInput(activity);
 				newInput = true;
 			}
 			if (operationChanged || messageChanged) {
@@ -571,20 +605,16 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 				else {
 					InsertionAdapter.add(ioSpec,
 							Bpmn2Package.eINSTANCE.getInputOutputSpecification_DataInputs(), input);
-					InsertionAdapter.add(ioSpec.getInputSets().get(0),
-							Bpmn2Package.eINSTANCE.getInputSet_DataInputRefs(), input);
+					InsertionAdapter.add(inputSet, Bpmn2Package.eINSTANCE.getInputSet_DataInputRefs(), input);
 				}
 			}
 		}
 		
 		if (outMessage!=null) {
 			boolean newOutput = false;
-			if (ioSpec.getDataOutputs().size()>0) {
-				output = ioSpec.getDataOutputs().get(0);
-			}
-			else {
-				output = Bpmn2ModelerFactory.createObject(resource, DataOutput.class);
-				output.setName( DataOutputPropertiesAdapter.generateName(ioSpec.getDataOutputs()) );
+			output = getDefaultDataOutput(activity);
+			if (output==null) {
+				output = createDefaultDataOutput(activity);
 				newOutput = true;
 			}
 			if (operationChanged || messageChanged) {
@@ -603,41 +633,72 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 				else {
 					InsertionAdapter.add(ioSpec,
 							Bpmn2Package.eINSTANCE.getInputOutputSpecification_DataOutputs(), output);
-					InsertionAdapter.add(ioSpec.getOutputSets().get(0),
-							Bpmn2Package.eINSTANCE.getOutputSet_DataOutputRefs(), output);
+					InsertionAdapter.add(outputSet, Bpmn2Package.eINSTANCE.getOutputSet_DataOutputRefs(), output);
 				}
 			}
 		}
 		
-		if (ioSpec.getDataInputs().size()>0) {
-			input = ioSpec.getDataInputs().get(0);
-			// fix missing InputSet
-			if (!inputSet.getDataInputRefs().contains(input)) {
-				final DataInput i = input;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						inputSet.getDataInputRefs().add(i);
+		// fix problem with DataInputs not contained in any InputSet
+		List<DataInput> uncontainedInputs = new ArrayList<DataInput>();
+		for (DataInput din : ioSpec.getDataInputs()) {
+			boolean found = false;
+			for (InputSet iset : ioSpec.getInputSets()) {
+				for (DataInput isetdi : iset.getDataInputRefs()) {
+					if (isetdi.getName().equals(din.getName())) {
+						found = true;
+						break;
 					}
-				});
+				}
+			}
+			if (!found) {
+				for (DataInput isetdi : inputSet.getDataInputRefs()) {
+					if (isetdi.getName().equals(din.getName())) {
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
+				uncontainedInputs.add(din);
 			}
 		}
-		if (ioSpec.getDataOutputs().size()>0) {
-			output = ioSpec.getDataOutputs().get(0);
-			// fix missing OutputSet
-			if (!outputSet.getDataOutputRefs().contains(output)) {
-				final DataOutput o = output;
-				TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-				domain.getCommandStack().execute(new RecordingCommand(domain) {
-					@Override
-					protected void doExecute() {
-						outputSet.getDataOutputRefs().add(o);
+		for (DataInput din : uncontainedInputs) {
+			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
+				inputSet.getDataInputRefs().add(din);
+			else
+				InsertionAdapter.add(inputSet, Bpmn2Package.eINSTANCE.getInputSet_DataInputRefs(), din);
+		}
+		// same thing for DataOutputs
+		List<DataOutput> uncontainedOutputs = new ArrayList<DataOutput>();
+		for (DataOutput dout : ioSpec.getDataOutputs()) {
+			boolean found = false;
+			for (OutputSet oset : ioSpec.getOutputSets()) {
+				for (DataOutput isetdi : oset.getDataOutputRefs()) {
+					if (isetdi.getName().equals(dout.getName())) {
+						found = true;
+						break;
 					}
-				});
+				}
+			}
+			if (!found) {
+				for (DataOutput isetdi : outputSet.getDataOutputRefs()) {
+					if (isetdi.getName().equals(dout.getName())) {
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
+				uncontainedOutputs.add(dout);
 			}
 		}
-		
+		for (DataOutput dout : uncontainedOutputs) {
+			if (operationChanged || messageChanged || ioSpec.eContainer()==null)
+				outputSet.getDataOutputRefs().add(dout);
+			else
+				InsertionAdapter.add(outputSet, Bpmn2Package.eINSTANCE.getOutputSet_DataOutputRefs(), dout);
+		}
+
 		// Attach the I/O Spec to the Activity if it is not already contained
 		if (ioSpec.eContainer()==null) {
 			InsertionAdapter.add(activity, Bpmn2Package.eINSTANCE.getActivity_IoSpecification(), ioSpec);
