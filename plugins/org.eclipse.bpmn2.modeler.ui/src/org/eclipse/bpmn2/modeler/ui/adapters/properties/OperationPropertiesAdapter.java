@@ -68,10 +68,12 @@ public class OperationPropertiesAdapter extends ExtendedPropertiesAdapter<Operat
     	feature = Bpmn2Package.eINSTANCE.getOperation_InMessageRef();
     	setFeatureDescriptor(feature, new RootElementRefFeatureDescriptor<Operation>(this,object,feature));
        	setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+       	setProperty(feature, UI_CAN_SET_NULL, Boolean.TRUE);
 
     	feature = Bpmn2Package.eINSTANCE.getOperation_OutMessageRef();
        	setFeatureDescriptor(feature, new RootElementRefFeatureDescriptor<Operation>(this,object,feature));
        	setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+       	setProperty(feature, UI_CAN_SET_NULL, Boolean.TRUE);
     	
     	setObjectDescriptor( new ObjectDescriptor<Operation>(this,object) {
 
