@@ -3,6 +3,7 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.jar.JarEntry;
@@ -14,6 +15,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -32,6 +34,8 @@ import org.eclipse.swt.graphics.ImageData;
 public class WIDLoader {
 
 	private static final int BUFFER_SIZE = 1024;
+	private static final String WID_FOLDER = "/src/main/resources/META-INF";
+	private static final String ICONS_FOLDER = "/src/main/resources/icons";
 	
 	private HashMap<String, WorkItemDefinition> projectWIDs = new HashMap<String, WorkItemDefinition>();
 	private HashMap<String, ImageDescriptor> projectIcons = new HashMap<String, ImageDescriptor>();
@@ -44,9 +48,13 @@ public class WIDLoader {
 		public boolean visit (IResource resource) throws CoreException {
 			try {
 				if (resource.getType() == IResource.FILE) {
-					if ("conf".equalsIgnoreCase(((IFile)resource).getFileExtension()) || //$NON-NLS-1$
-							"wid".equalsIgnoreCase(((IFile)resource).getFileExtension())) { //$NON-NLS-1$
-						getProjectFileWIDs((IFile)resource);
+					// only check the folder src/main/resources/META-INF for WID files
+					if ("wid".equalsIgnoreCase(((IFile)resource).getFileExtension())) { //$NON-NLS-1$
+						String folder = resource.getParent().getFullPath().toString();
+						IProject project = resource.getProject();
+						if ((project.getFullPath().toString() + WID_FOLDER).equals(folder)) {
+							getProjectFileWIDs((IFile)resource);
+						}
 						return true;
 					}
 				}
@@ -110,7 +118,7 @@ public class WIDLoader {
 	
 	private void getProjectFileWIDs(IFile file) throws CoreException, IOException, WIDException {
 		InputStream is = file.getContents();
-		String content = inputStreamToString(is);
+		String content = inputStreamToString(is,null);
 		HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
 		for (WorkItemDefinition wid : widMap.values()) {
 			String icon = wid.getIcon();
@@ -124,11 +132,9 @@ public class WIDLoader {
 	
 	private void getProjectFileIcon(IFile file, String icon) throws CoreException, IOException {
 		IProject project = file.getProject();
-		IFile iconFile = project.getFile(icon);
-		if (!iconFile.exists()) {
-			IPath path = file.getParent().getFullPath().removeFirstSegments(1).append(icon);
-			iconFile = project.getFile(path);
-		}
+		
+		// search for icon file in /src/main/resources/icons
+		IFile iconFile = project.getFile(new Path(ICONS_FOLDER + "/" + icon));
 		
 		InputStream is = null;
 		try {
@@ -160,10 +166,10 @@ public class WIDLoader {
 			    JarEntry entry = enumEntries.nextElement();
 			    if (!entry.isDirectory()) {
 				    String name = entry.getName();
-				    if (name.endsWith(".wid") || name.endsWith(".conf")) {
+				    if (name.endsWith(".wid")) {
 				    	is = jar.getInputStream(entry);
 						if (is!=null) {
-							String content = inputStreamToString(is);
+							String content = inputStreamToString(is,null);
 							HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
 							for (WorkItemDefinition wid : widMap.values()) {
 								String icon = wid.getIcon();
@@ -229,9 +235,11 @@ public class WIDLoader {
         return null;
     }
 
-	public static String inputStreamToString(InputStream inputStream) throws IOException {
+	public static String inputStreamToString(InputStream inputStream, Charset charset) throws IOException {
+		if (charset==null)
+			charset = Charset.defaultCharset();
 	    StringBuilder builder = new StringBuilder();
-	    InputStreamReader reader = new InputStreamReader(inputStream);
+	    InputStreamReader reader = new InputStreamReader(inputStream, charset);
 	    char[] buffer = new char[BUFFER_SIZE];
 	    int length;
 	    while ((length = reader.read(buffer)) != -1) {

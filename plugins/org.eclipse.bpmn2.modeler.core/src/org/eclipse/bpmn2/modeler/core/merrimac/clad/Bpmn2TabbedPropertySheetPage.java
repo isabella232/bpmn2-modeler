@@ -80,7 +80,8 @@ public class Bpmn2TabbedPropertySheetPage extends TabbedPropertySheetPage implem
 	}
 	
 	private void doSelectionChanged(IWorkbenchPart part, ISelection selection) {
-		super.selectionChanged(part, selection);
+		if (!getControl().isDisposed())
+			super.selectionChanged(part, selection);
 	}
 	
 	public DiagramEditor getDiagramEditor() {

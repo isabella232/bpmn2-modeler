@@ -394,9 +394,11 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 		Control control = getControl();
 		if (control instanceof Text) {
 			((Text)control).setEditable(editable);
-			control.setBackground(control.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-			control.setForeground(control.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-			control.setData(AbstractObjectEditingDialog.DO_NOT_ADAPT, Boolean.TRUE);
+			if (!editable) {
+				control.setBackground(control.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+				control.setForeground(control.getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+				control.setData(AbstractObjectEditingDialog.DO_NOT_ADAPT, Boolean.TRUE);
+			}
 		}
 	}
 }

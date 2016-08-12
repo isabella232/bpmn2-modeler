@@ -23,6 +23,12 @@ public class ReadonlyTextObjectEditor extends TextAndButtonObjectEditor {
 			EObject object, EStructuralFeature feature) {
 		super(parent, object, feature);
 	}
+	
+	@Override
+	public void setEditable(boolean editable) {
+		// ignore - this is already read-only and super.setEditable()
+		// only changes the background color
+	}
 
 	@Override
 	protected void buttonClicked(int buttonId) {

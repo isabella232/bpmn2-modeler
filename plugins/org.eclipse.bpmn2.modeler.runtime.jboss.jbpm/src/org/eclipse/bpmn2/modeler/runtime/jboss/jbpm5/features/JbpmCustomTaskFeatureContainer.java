@@ -26,17 +26,24 @@ import org.eclipse.bpmn2.ItemKind;
 import org.eclipse.bpmn2.OutputSet;
 import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.features.CustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.CustomShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.ModelDecorator;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.JavaProjectClassLoader;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ShapeDecoratorUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.customeditor.SampleCustomEditor;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.ParameterDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.Work;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkEditor;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.ParameterDefinitionImpl;
@@ -49,6 +56,9 @@ import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
 import org.eclipse.bpmn2.modeler.ui.features.activity.task.TaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.activity.task.TaskFeatureContainer.CreateTaskFeature;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -63,6 +73,7 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.swt.widgets.Display;
 
 public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer {
 	
@@ -188,8 +199,52 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		return null;
 	}
 
-	@Deprecated
-	// This class is no longer used. Custom Task parameters are now configured in the I/O Parameters property tab 
+	@Override
+	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
+		ICustomFeature[] superFeatures = super.getCustomFeatures(fp);
+		ICustomFeature[] thisFeatures = new ICustomFeature[superFeatures.length + 1];
+		int i = 0;
+		while (i<superFeatures.length)
+			thisFeatures[i] = superFeatures[i++];
+		thisFeatures[i] = new ConfigureWorkItemFeature(fp);
+		return thisFeatures;
+	}
+
+	/**
+	 * Returns the Java class that implements a Work Item Editor dialog for the
+	 * given BaseElement if the WID file defines one.
+	 * 
+	 * @param baseElement
+	 * @return a Work Item Editor dialog class or null if the BaseElement is not
+	 *         a custom task (defined by a WID file) or if the WID file does
+	 *         declare a "eclipse:customEditor" class.
+	 *
+	 * TODO: make this return an object instance and make sure it implements
+	 * the {@code WorkEditor} interface.
+	 */
+	public static WorkEditor getWorkItemEditor(BaseElement baseElement) {
+		String customTaskId = CustomElementFeatureContainer.findId(baseElement);
+    	TargetRuntime rt = TargetRuntime.getRuntime(baseElement);
+    	JBPM5RuntimeExtension rte = (JBPM5RuntimeExtension)rt.getRuntimeExtension();
+    	WorkItemDefinition wid = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(customTaskId);
+    	if (wid!=null) {
+	    	String customEditor = wid.getEclipseCustomEditor();
+	    	if (customEditor!=null && !customEditor.isEmpty()) {
+				try {
+					Resource res = ExtendedPropertiesAdapter.getResource(baseElement);
+					URI uri = res.getURI();
+					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
+		    		JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
+		    		if (cl!=null) {
+		    			return new SampleCustomEditor(Display.getDefault().getActiveShell());
+		    		}
+				} catch (Exception ignore) {
+				}
+			}
+    	}
+    	return null;
+	}
+	
 	public class ConfigureWorkItemFeature implements ICustomFeature {
 
 		protected IFeatureProvider fp;
@@ -229,6 +284,8 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		 */
 		@Override
 		public boolean canExecute(IContext context) {
+			// TODO: clean this mess up: use {@code getWorkItemEditor()) to check if the selected task
+			// has a WID and if the WID defines a customEditor
 			BPMN2Editor editor = (BPMN2Editor)getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
 			IBpmn2RuntimeExtension rte = editor.getTargetRuntime().getRuntimeExtension();
 			if (rte instanceof JBPM5RuntimeExtension && context instanceof ICustomContext) {
@@ -264,6 +321,8 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		 */
 		@Override
 		public void execute(IContext context) {
+			// TODO: clean this mess up: use {@code getWorkItemEditor()) to check if the selected task
+			// has a WID and if the WID defines a customEditor
 			BPMN2Editor editor = (BPMN2Editor)getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
 			PictogramElement pe = ((ICustomContext) context).getPictogramElements()[0];
 			final Task task = (Task)Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(pe);
@@ -309,7 +368,26 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 				}
 			}
 
-			SampleCustomEditor dialog = new SampleCustomEditor(editor.getSite().getShell());
+			/*
+			 * Load the class defined in the WID's "eclipse:customEditor" field.
+			 * This means that the containing Project must be a JavaProject, and
+			 * the class must exist and must implement the WorkEditor interface.
+		try {
+			Resource res = ExtendedPropertiesAdapter.getResource(task);
+			URI uri = res.getURI();
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
+			JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
+			Class c = cl.loadClass("org.bpmn2.java.Calculator");
+			Object o = c.newInstance();
+			String s = o.toString();
+			System.out.println(s);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			 */
+			
+			WorkEditor dialog = getWorkItemEditor(task);
 			dialog.setWorkDefinition(wd);
 			dialog.setWork(w);
 			dialog.show();
