@@ -72,65 +72,67 @@ public class EventDefinitionValidator extends AbstractBpmn2ElementValidator<Even
 	@Override
 	public IStatus validate(EventDefinition ed) {
 		BaseElement edContainer = (BaseElement) ed.eContainer();
-		if (ed instanceof TimerEventDefinition) {
-			TimerEventDefinition ted = (TimerEventDefinition) ed;
-			if (ted.getTimeDate() == null && ted.getTimeDuration() == null && ted.getTimeCycle() == null) {
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Timer, Status.ERROR);
-			}
-		} else if (ed instanceof SignalEventDefinition) {
-			Signal signal = ((SignalEventDefinition) ed).getSignalRef();
-			if (signal==null)
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Signal, Status.ERROR);
-			else
-				new SignalValidator(this).validate(signal);
-		} else if (ed instanceof ErrorEventDefinition) {
-			Error error = ((ErrorEventDefinition) ed).getErrorRef();
-			if (error==null)
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Error, Status.ERROR);
-			else
-				new ErrorValidator(this).validate(error);
-		} else if (ed instanceof ConditionalEventDefinition) {
-			FormalExpression expression = (FormalExpression) ((ConditionalEventDefinition) ed).getCondition();
-			if (expression==null || isEmpty(expression.getBody()))
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Condition, Status.ERROR);
-			else
-				new ExpressionValidator(this).validate(expression);
-		} else if (ed instanceof EscalationEventDefinition) {
-			Escalation escalation = ((EscalationEventDefinition) ed).getEscalationRef();
-			if (escalation==null)
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Escalation, Status.ERROR);
-			else
-				new EscalationValidator(this).validate(escalation);
-		} else if (ed instanceof MessageEventDefinition) {
-			Message message = ((MessageEventDefinition) ed).getMessageRef();
-			if (message==null)
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Message, Status.ERROR);
-			else
-				new MessageValidator(this).validate(message);
-		} else if (ed instanceof CompensateEventDefinition) {
-			Activity activity = ((CompensateEventDefinition) ed).getActivityRef();
-			if (activity==null)
-				addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_CalledActivity, Status.ERROR);
-			else
-				new ActivityValidator(this).validate(activity);
-		}
-		
-		if (edContainer instanceof Event && EventDefinitionsUtil.hasItemDefinition(ed)) {
-			// get Data Association and make sure both source and target are defined
-			Tuple<ItemAwareElement,DataAssociation> param = EventDefinitionsUtil.getIOParameter((Event)edContainer, ed);
-			DataAssociation da = param.getSecond();
-			int severity = ProcessValidator.isContainingProcessExecutable(edContainer) ? Status.ERROR : Status.WARNING;
-			if (da instanceof DataInputAssociation) {
-				if (((DataInputAssociation)da).getSourceRef().size()==0) {
-					addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Source_DataItem,
-							ModelUtil.getLabel(ed),
-							ModelUtil.getLabel(edContainer));
+		if (ProcessValidator.isContainingProcessExecutable(edContainer)) {
+			if (ed instanceof TimerEventDefinition) {
+				TimerEventDefinition ted = (TimerEventDefinition) ed;
+				if (ted.getTimeDate() == null && ted.getTimeDuration() == null && ted.getTimeCycle() == null) {
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Timer, Status.ERROR);
 				}
+			} else if (ed instanceof SignalEventDefinition) {
+				Signal signal = ((SignalEventDefinition) ed).getSignalRef();
+				if (signal==null)
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Signal, Status.ERROR);
+				else
+					new SignalValidator(this).validate(signal);
+			} else if (ed instanceof ErrorEventDefinition) {
+				Error error = ((ErrorEventDefinition) ed).getErrorRef();
+				if (error==null)
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Error, Status.ERROR);
+				else
+					new ErrorValidator(this).validate(error);
+			} else if (ed instanceof ConditionalEventDefinition) {
+				FormalExpression expression = (FormalExpression) ((ConditionalEventDefinition) ed).getCondition();
+				if (expression==null || isEmpty(expression.getBody()))
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Condition, Status.ERROR);
+				else
+					new ExpressionValidator(this).validate(expression);
+			} else if (ed instanceof EscalationEventDefinition) {
+				Escalation escalation = ((EscalationEventDefinition) ed).getEscalationRef();
+				if (escalation==null)
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Escalation, Status.ERROR);
+				else
+					new EscalationValidator(this).validate(escalation);
+			} else if (ed instanceof MessageEventDefinition) {
+				Message message = ((MessageEventDefinition) ed).getMessageRef();
+				if (message==null)
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_Message, Status.ERROR);
+				else
+					new MessageValidator(this).validate(message);
+			} else if (ed instanceof CompensateEventDefinition) {
+				Activity activity = ((CompensateEventDefinition) ed).getActivityRef();
+				if (activity==null)
+					addMissingFeatureStatus(edContainer,Messages.EventDefinitionValidator_CalledActivity, Status.ERROR);
+				else
+					new ActivityValidator(this).validate(activity);
 			}
-			else if (da instanceof DataOutputAssociation) {
-				if (((DataOutputAssociation)da).getTargetRef()==null) {
-					addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Target_DataItem,
-							ModelUtil.getLabel(ed));
+		
+			if (edContainer instanceof Event && EventDefinitionsUtil.hasItemDefinition(ed)) {
+				// get Data Association and make sure both source and target are defined
+				Tuple<ItemAwareElement,DataAssociation> param = EventDefinitionsUtil.getIOParameter((Event)edContainer, ed);
+				DataAssociation da = param.getSecond();
+				int severity = ProcessValidator.isContainingProcessExecutable(edContainer) ? Status.ERROR : Status.WARNING;
+				if (da instanceof DataInputAssociation) {
+					if (((DataInputAssociation)da).getSourceRef().size()==0) {
+						addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Source_DataItem,
+								ModelUtil.getLabel(ed),
+								ModelUtil.getLabel(edContainer));
+					}
+				}
+				else if (da instanceof DataOutputAssociation) {
+					if (((DataOutputAssociation)da).getTargetRef()==null) {
+						addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Target_DataItem,
+								ModelUtil.getLabel(ed));
+					}
 				}
 			}
 		}
