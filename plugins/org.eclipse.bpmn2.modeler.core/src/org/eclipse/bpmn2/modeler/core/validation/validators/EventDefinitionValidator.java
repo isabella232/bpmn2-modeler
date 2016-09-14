@@ -120,17 +120,16 @@ public class EventDefinitionValidator extends AbstractBpmn2ElementValidator<Even
 				// get Data Association and make sure both source and target are defined
 				Tuple<ItemAwareElement,DataAssociation> param = EventDefinitionsUtil.getIOParameter((Event)edContainer, ed);
 				DataAssociation da = param.getSecond();
-				int severity = ProcessValidator.isContainingProcessExecutable(edContainer) ? Status.ERROR : Status.WARNING;
 				if (da instanceof DataInputAssociation) {
 					if (((DataInputAssociation)da).getSourceRef().size()==0) {
-						addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Source_DataItem,
+						addStatus(edContainer,Status.ERROR,Messages.EventDefinitionValidator_No_Source_DataItem,
 								ModelUtil.getLabel(ed),
 								ModelUtil.getLabel(edContainer));
 					}
 				}
 				else if (da instanceof DataOutputAssociation) {
 					if (((DataOutputAssociation)da).getTargetRef()==null) {
-						addStatus(edContainer,severity,Messages.EventDefinitionValidator_No_Target_DataItem,
+						addStatus(edContainer,Status.ERROR,Messages.EventDefinitionValidator_No_Target_DataItem,
 								ModelUtil.getLabel(ed));
 					}
 				}
