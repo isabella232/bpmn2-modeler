@@ -64,10 +64,11 @@ public class ProcessVariableNameChangeAdapter implements Adapter {
 	public static boolean appliesTo(EObject object) {
 		return (object instanceof org.eclipse.bpmn2.Property ||
 				object instanceof DataObject ||
-				object instanceof Message ||
-				object instanceof Signal ||
-				object instanceof Error ||
-				object instanceof Escalation ||
+				// see https://issues.jboss.org/browse/RHBPMS-4302
+//				object instanceof Message ||
+//				object instanceof Signal ||
+//				object instanceof Error ||
+//				object instanceof Escalation ||
 				object instanceof GlobalType ||
 					(
 						// DataInput and DataOutput objects are a special case: Only
