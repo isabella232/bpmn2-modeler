@@ -564,10 +564,11 @@ public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 					}
 				}
 				else if (target instanceof FlowElementsContainer) {
-					FlowElementsContainer p = (FlowElementsContainer) target;
-					if (p.getLaneSets().isEmpty()) {
+					// see https://issues.jboss.org/browse/RHBPMS-4295
+//					FlowElementsContainer p = (FlowElementsContainer) target;
+//					if (p.getLaneSets().isEmpty()) {
 						return true;
-					}
+//					}
 				}
 			} catch (Exception e) {
 				Activator.logError(e);
