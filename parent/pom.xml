@@ -132,6 +132,7 @@
 				<eclipse-site>http://download.eclipse.org/releases/neon</eclipse-site>
 				<platform-version>[4.6,5.0)</platform-version>
 				<platform-version-name>neon</platform-version-name>
+				<eclipse.orbit.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository</eclipse.orbit.url>
 			</properties>
 		</profile>
 		<profile>
@@ -252,6 +253,17 @@
 			</releases>
 		</repository>
 
+		<repository>
+			<id>eclipse-orbit</id>
+			<url>${eclipse.orbit.url}</url>
+			<layout>p2</layout>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>

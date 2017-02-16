@@ -20,8 +20,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDParser;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.junit.Test;
+import org.junit.Assert;
 
-import junit.framework.Assert;
 
 /**
  * Basic tests for the WIDHandler
