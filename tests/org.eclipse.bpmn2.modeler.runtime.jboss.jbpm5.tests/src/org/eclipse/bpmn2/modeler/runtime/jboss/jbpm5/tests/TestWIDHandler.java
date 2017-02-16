@@ -10,26 +10,18 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.tests;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
-
-import junit.framework.Assert;
 
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDParser;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.junit.Test;
-import org.osgi.framework.Bundle;
+
+import junit.framework.Assert;
 
 /**
  * Basic tests for the WIDHandler
@@ -39,25 +31,12 @@ import org.osgi.framework.Bundle;
 public class TestWIDHandler {
 
 	private String getFile( String filepath ) {
-		try {
-			if (filepath == null) {
-				Bundle bundle = Activator.getDefault().getBundle();
-				IPath path = new Path("widfiles/logemail.wid");
-				URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
-				File setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
-				filepath = setupFile.getAbsolutePath();
-			} else {
-				Bundle bundle = Activator.getDefault().getBundle();
-				IPath path = new Path(filepath);
-				URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
-				File setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
-				filepath = setupFile.getAbsolutePath();
-			}
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (filepath == null) {
+			filepath = "widfiles/logemail.wid";
 		}
+		URL url = this.getClass().getClassLoader().getResource(filepath);
+		filepath = url.getPath().toString();
+		
 		StringBuilder text = new StringBuilder();
 	    String NL = System.getProperty("line.separator");
 	    Scanner scanner = null;
