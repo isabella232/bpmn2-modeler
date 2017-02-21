@@ -10,8 +10,14 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.validation;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+
 public class SyntaxCheckerUtils {
 	private static char invalidChar;
+	private final static Charset charsetUTF8 = Charset.forName("UTF-8");
 	
 	public static char getInvalidChar() {
 		return invalidChar;
@@ -111,6 +117,27 @@ public class SyntaxCheckerUtils {
 		if (name==null || name.isEmpty())
 			return false;
 		
+		try {
+			System.out.println("isJavaIdentifier checking for UTF8 string");
+			CharBuffer charbuf = charsetUTF8.newDecoder().decode(ByteBuffer.wrap(name.getBytes()));
+			char c = charbuf.charAt(0);
+			int nameLength = charbuf.length();
+
+			if (Character.isJavaIdentifierStart(c)) {
+				// Check the rest of the characters
+				for (int i = 1; i < nameLength; i++) {
+					c = charbuf.charAt(i);
+					if (!Character.isJavaIdentifierPart(c)) {
+						invalidChar = c;
+						return false;
+					}
+				}
+
+				// All characters have been checked
+				return true;
+			}
+		} catch (CharacterCodingException e) {
+		}
 		int nameLength = name.length();
 
 		// Check first character

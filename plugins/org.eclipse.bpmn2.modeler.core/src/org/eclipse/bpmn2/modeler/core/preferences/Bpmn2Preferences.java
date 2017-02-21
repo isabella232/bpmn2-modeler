@@ -824,7 +824,12 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	public ModelEnablementDescriptor createToolProfile(TargetRuntime rt, String id, String profileName, String description) {
 		ModelEnablementDescriptor med = null;
 		boolean createNew = false;
-		if (id!=null && !id.isEmpty() && profileName!=null && !profileName.isEmpty()) {
+		if (profileName==null || profileName.isEmpty()) {
+			profileName = "default";
+			if (description==null || description.isEmpty()) 
+				description = "Default Profile";
+		}
+		if (id!=null && !id.isEmpty()) {
 			try {
 				Preferences prefs = null;
 				String path = getToolProfilePath(rt);

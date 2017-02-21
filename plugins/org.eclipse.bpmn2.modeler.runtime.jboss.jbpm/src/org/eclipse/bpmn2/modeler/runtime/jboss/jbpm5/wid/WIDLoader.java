@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -38,9 +40,9 @@ public class WIDLoader {
 	private static final String WID_FOLDER = "/src/main/resources/META-INF";
 	private static final String ICONS_FOLDER = "/src/main/resources/icons";
 	
-	private HashMap<String, WorkItemDefinition> projectWIDs = new HashMap<String, WorkItemDefinition>();
+	private List<WorkItemDefinition> projectWIDs = new ArrayList<WorkItemDefinition>();
 	private HashMap<String, ImageDescriptor> projectIcons = new HashMap<String, ImageDescriptor>();
-	private HashMap<String, WorkItemDefinition> classpathWIDs = new HashMap<String, WorkItemDefinition>();
+	private List<WorkItemDefinition> classpathWIDs = new ArrayList<WorkItemDefinition>();
 	private HashMap<String, ImageDescriptor> classpathIcons = new HashMap<String, ImageDescriptor>();
 	
 	private class WIDVisitor implements IResourceVisitor {
@@ -101,11 +103,11 @@ public class WIDLoader {
 		project.accept(visitor, IResource.DEPTH_INFINITE, false);
 	}
 	
-	public HashMap<String, WorkItemDefinition> getProjectWIDs() {
+	public List<WorkItemDefinition> getProjectWIDs() {
 		return projectWIDs;
 	}
 
-	public HashMap<String, WorkItemDefinition> getClasspathWIDs() {
+	public List<WorkItemDefinition> getClasspathWIDs() {
 		return classpathWIDs;
 	}
 	
@@ -120,15 +122,15 @@ public class WIDLoader {
 	private void getProjectFileWIDs(IFile file) throws CoreException, IOException, WIDException {
 		InputStream is = file.getContents();
 		String content = inputStreamToString(is,null);
-		HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
-		for (WorkItemDefinition wid : widMap.values()) {
+		List<WorkItemDefinition> widMap = WIDParser.parse(content);
+		for (WorkItemDefinition wid : widMap) {
 			String icon = wid.getIcon();
 			if (icon!=null && !icon.isEmpty()) {
 				getProjectFileIcon(file, icon);
 				((WorkItemDefinitionImpl)wid).setDefinitionFile(file.getFullPath().toFile());
 			}
 		}
-		projectWIDs.putAll(widMap);
+		projectWIDs.addAll(widMap);
 	}
 	
 	private void getProjectFileIcon(IFile file, String icon) throws CoreException, IOException {
@@ -171,13 +173,13 @@ public class WIDLoader {
 				    	is = jar.getInputStream(entry);
 						if (is!=null) {
 							String content = inputStreamToString(is,null);
-							HashMap<String, WorkItemDefinition> widMap = WIDParser.parse(content);
-							for (WorkItemDefinition wid : widMap.values()) {
+							List<WorkItemDefinition> widMap = WIDParser.parse(content);
+							for (WorkItemDefinition wid : widMap) {
 								String icon = wid.getIcon();
 								getJarFileIcon(jar, icon);
 								((WorkItemDefinitionImpl)wid).setDefinitionFile(jarFile.getAbsoluteFile());
 							}
-							classpathWIDs.putAll(widMap);
+							classpathWIDs.addAll(widMap);
 							is.close();
 						}
 				    }

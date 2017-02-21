@@ -16,6 +16,9 @@ public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.bpmn2.modeler.core.runtime.messages"; //$NON-NLS-1$
 	public static String TargetRuntime_Config_Error;
 	public static String TargetRuntimeConfigurationException_Config_Error;
+	public static String TargetRuntime_Duplicate_Custom_Task_Title;
+	public static String TargetRuntime_Duplicate_Custom_Task_ID_Message;
+	public static String TargetRuntime_Duplicate_Custom_Task_Name_Message;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
@@ -48,6 +49,9 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.graphiti.platform.IDiagramBehavior;
 import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 
 
@@ -59,6 +63,50 @@ import org.eclipse.ui.IEditorInput;
 public class TargetRuntime extends BaseRuntimeExtensionDescriptor implements IRuntimeExtensionDescriptor {
 
 	public static final String EXTENSION_NAME = "runtime"; //$NON-NLS-1$
+
+	@SuppressWarnings("serial")
+	public class CustomTaskSet extends TreeSet<CustomTaskDescriptor> {
+		public CustomTaskSet() {
+			super(new Comparator<CustomTaskDescriptor>() {
+				@Override
+				public int compare(CustomTaskDescriptor t1, CustomTaskDescriptor t2) {
+					return t1.getId().compareTo(t2.getId());
+				}
+			});
+		}
+		
+		@Override
+		public boolean add(CustomTaskDescriptor customTaskDescriptor) {
+			if (this.contains(customTaskDescriptor)) {
+				// a custom task with this same ID already exists
+				MessageDialog.openError(Display.getDefault().getActiveShell(),
+						Messages.TargetRuntime_Duplicate_Custom_Task_Title,
+						NLS.bind(
+							Messages.TargetRuntime_Duplicate_Custom_Task_ID_Message,
+							customTaskDescriptor.getId()
+						)
+					);
+				return false;
+			}
+			for (CustomTaskDescriptor ctd : this) {
+				if (ctd.getName().equals(customTaskDescriptor.getName())) {
+					// a custom task with a different ID, but the same name already exists
+					MessageDialog.openWarning(Display.getDefault().getActiveShell(),
+							Messages.TargetRuntime_Duplicate_Custom_Task_Title,
+							NLS.bind(
+								Messages.TargetRuntime_Duplicate_Custom_Task_Name_Message,
+								new Object[] {
+									customTaskDescriptor.getId(),
+									ctd.getId(),
+									ctd.getName()
+								}
+							)
+						);
+				}
+			}
+			return super.add(customTaskDescriptor);
+		}
+	}
 
 	// extension point ID for Target Runtimes
 	public static final String RUNTIME_EXTENSION_ID = "org.eclipse.bpmn2.modeler.runtime"; //$NON-NLS-1$
@@ -79,7 +127,7 @@ public class TargetRuntime extends BaseRuntimeExtensionDescriptor implements IRu
 	// the lists of Extension Descriptors defined in the extension plugin's plugin.xml
 	protected List<ModelDescriptor> modelDescriptors;
 	protected List<PropertyTabDescriptor> propertyTabDescriptors;
-	protected List<CustomTaskDescriptor> customTaskDescriptors;
+	protected CustomTaskSet customTaskDescriptors;
 	protected List<ModelExtensionDescriptor> modelExtensionDescriptors;
 	protected List<ModelEnablementDescriptor> modelEnablementDescriptors;
 //	protected ModelEnablementDescriptor defaultModelEnablementDescriptors;
@@ -935,10 +983,10 @@ public class TargetRuntime extends BaseRuntimeExtensionDescriptor implements IRu
 	/*
 	 * List Accessors for all Runtime Extension Descriptors
 	 */
-	public List<CustomTaskDescriptor> getCustomTaskDescriptors()
+	public CustomTaskSet getCustomTaskDescriptors()
 	{
 		if (customTaskDescriptors==null) {
-			customTaskDescriptors = new ArrayList<CustomTaskDescriptor>();
+			customTaskDescriptors = new CustomTaskSet();
 		}
 		return customTaskDescriptors;
 	}

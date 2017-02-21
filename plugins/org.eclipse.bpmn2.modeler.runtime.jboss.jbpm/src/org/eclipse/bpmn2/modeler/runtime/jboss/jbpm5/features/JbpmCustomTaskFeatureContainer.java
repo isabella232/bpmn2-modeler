@@ -12,9 +12,12 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
@@ -42,10 +45,11 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.customeditor.SampleCustomEditor;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.ParameterDefinition;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.Work;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkDefinition;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkEditor;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.StringDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.ParameterDefinitionImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkDefinitionImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkImpl;
@@ -141,7 +145,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 			WorkItemDefinition wid = rx.getWorkItemDefinition(id);
 			if (ioSpecification!=null && wid!=null) {
 				for (DataInput input : ioSpecification.getDataInputs()) {
-					for (Entry<String, String> entry : wid.getParameters().entrySet()) {
+					for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
 						if (input.getName().equals(entry.getKey())) {
 							if (entry.getValue()!=null)
 								input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
@@ -150,7 +154,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 					}
 				}
 				for (DataOutput output : ioSpecification.getDataOutputs()) {
-					for (Entry<String, String> entry : wid.getResults().entrySet()) {
+					for (Entry<String, Object> entry : wid.getResults().entrySet()) {
 						if (output.getName().equals(entry.getKey())) {
 							if (entry.getValue()!=null)
 								output.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
@@ -227,6 +231,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
     	TargetRuntime rt = TargetRuntime.getRuntime(baseElement);
     	JBPM5RuntimeExtension rte = (JBPM5RuntimeExtension)rt.getRuntimeExtension();
     	WorkItemDefinition wid = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(customTaskId);
+    	WorkEditor editor = null;
     	if (wid!=null) {
 	    	String customEditor = wid.getEclipseCustomEditor();
 	    	if (customEditor!=null && !customEditor.isEmpty()) {
@@ -236,13 +241,46 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
 		    		JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
 		    		if (cl!=null) {
-		    			return new SampleCustomEditor(Display.getDefault().getActiveShell());
+		    			editor = new SampleCustomEditor(Display.getDefault().getActiveShell());
+		    			Work work = new WorkImpl();
+		    			// set actual parameter values from Task object here...
+		    			work.setName(((Activity)baseElement).getName());
+		    			Map<String, Object> parameters = new HashMap<String, Object>();
+		    			parameters.putAll(wid.getParameters());
+		    			work.setParameters(parameters);
+		    			editor.setWork(work);
+		    			
+		    			WorkDefinitionImpl workDefinition = new WorkDefinitionImpl();
+		    			for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
+		    				ParameterDefinitionImpl pd = new ParameterDefinitionImpl();
+		    				pd.setName(entry.getKey());
+		    				DataType type;
+		    				if (entry.getValue() instanceof DataType)
+		    					type = (DataType) entry.getValue();
+		    				else
+		    					type = new StringDataType();
+		    				pd.setType(type);
+			    			workDefinition.addParameter(pd);
+			    			work.addParameterDefinition(pd);
+		    			}
+		    			for (Entry<String, Object> entry : wid.getResults().entrySet()) {
+		    				ParameterDefinitionImpl pd = new ParameterDefinitionImpl();
+		    				pd.setName(entry.getKey());
+		    				DataType type;
+		    				if (entry.getValue() instanceof DataType)
+		    					type = (DataType) entry.getValue();
+		    				else
+		    					type = new StringDataType();
+		    				pd.setType(type);
+			    			workDefinition.addResult(pd);
+		    			}
+		    			editor.setWorkDefinition(workDefinition);
 		    		}
 				} catch (Exception ignore) {
 				}
 			}
     	}
-    	return null;
+    	return editor;
 	}
 	
 	public class ConfigureWorkItemFeature implements ICustomFeature {
@@ -340,9 +378,16 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 			
 			WorkDefinitionImpl wd = new WorkDefinitionImpl();
 			for (String name : workItemDefinition.getParameters().keySet()) {
-				String type = workItemDefinition.getParameters().get(name);
-				DataTypeFactory factory = DataTypeRegistry.getFactory(type);
-				wd.addParameter( new ParameterDefinitionImpl(name,factory.createDataType()) );
+				Object type = workItemDefinition.getParameters().get(name);
+				DataTypeFactory factory = null;
+				if (type instanceof DataType) {
+					factory = DataTypeRegistry.getFactory(((DataType)type).getStringType());
+				}
+				else if (type instanceof String) {
+					factory = DataTypeRegistry.getFactory((String)type);
+				}
+				if (factory!=null)
+					wd.addParameter( new ParameterDefinitionImpl(name,factory.createDataType()) );
 			}
 			
 			WorkImpl w = new WorkImpl();

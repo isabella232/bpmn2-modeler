@@ -34,8 +34,8 @@ public interface WorkItemDefinition {
 	public void setCategory ( String category );
 	public String getIcon();
 	public void setIcon ( String iconPath );
-	public LinkedHashMap<String, String> getParameters();
-	public LinkedHashMap<String, String> getResults();
+	public LinkedHashMap<String, Object> getParameters();
+	public LinkedHashMap<String, Object> getResults();
 	public File getDefinitionFile();
 	
 }

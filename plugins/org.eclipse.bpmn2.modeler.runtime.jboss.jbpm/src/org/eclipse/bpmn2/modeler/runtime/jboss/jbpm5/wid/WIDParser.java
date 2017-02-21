@@ -12,10 +12,9 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
 
@@ -38,10 +37,9 @@ public class WIDParser {
      * work item task names.
      * @throws WIDException
      */
-    public static HashMap<String, WorkItemDefinition> parse(String content) throws WIDException {
+    public static List<WorkItemDefinition> parse(String content) throws WIDException {
 
-    	HashMap<String, WorkItemDefinition> widMap = 
-				new LinkedHashMap<String, WorkItemDefinition>();
+    	List<WorkItemDefinition> widMap = new ArrayList<WorkItemDefinition>();
     	
     	if (content == null) {
         	  WIDException widException = 
@@ -84,7 +82,7 @@ public class WIDParser {
         		  openBrackets--;
         		  if (openBrackets == 1) {
 	    			  if (currentWid != null && currentWid.getName() != null) {
-	    				  widMap.put(currentWid.getName(), currentWid);
+	    				  widMap.add(currentWid);
 	    			  }
 	    			  currentWid = new WorkItemDefinitionImpl();
         		  }
@@ -98,34 +96,34 @@ public class WIDParser {
         				  valueIndex = 2;
         				  name = name + ':' + nameValue[1].replace('"', ' ').trim();
         			  }
-        			  String value = nameValue[valueIndex].replace('"', ' ').replace(',', ' ').
+        			  String stringValue = nameValue[valueIndex].replace('"', ' ').replace(',', ' ').
         					  replace('[',' ').trim();
-        			  if (openBrackets == 2 && value.trim().length() > 0) {
+        			  if (openBrackets == 2 && stringValue.trim().length() > 0) {
         				  if (name.equalsIgnoreCase("name")) { //$NON-NLS-1$
-        					  currentWid.setName(value);
+        					  currentWid.setName(stringValue);
         				  } else if (name.equalsIgnoreCase("displayName")) { //$NON-NLS-1$
-        					  currentWid.setDispalyName(value);
+        					  currentWid.setDispalyName(stringValue);
 						  } else if (name.equalsIgnoreCase("description")) { //$NON-NLS-1$
-							  currentWid.setDescription(value);
+							  currentWid.setDescription(stringValue);
 						  } else if (name.equalsIgnoreCase("category")) { //$NON-NLS-1$
-							  currentWid.setCategory(value);
+							  currentWid.setCategory(stringValue);
         				  } else if (name.equalsIgnoreCase("icon")) { //$NON-NLS-1$
-        					  currentWid.setIcon(value);
+        					  currentWid.setIcon(stringValue);
         				  } else if (name.equalsIgnoreCase("customEditor")) { //$NON-NLS-1$
-        					  currentWid.setCustomEditor(value);
+        					  currentWid.setCustomEditor(stringValue);
         				  } else if (name.equalsIgnoreCase("eclipse:customEditor")) { //$NON-NLS-1$
-        					  currentWid.setEclipseCustomEditor(value);
+        					  currentWid.setEclipseCustomEditor(stringValue);
         				  }
-        			  } else if (openBrackets == 3 && value.trim().length() > 0) {
-        				  if (value.startsWith("new") && value.indexOf("(")>0) { //$NON-NLS-1$ //$NON-NLS-2$
-        					  int index = value.indexOf("("); //$NON-NLS-1$
-        					  value = value.substring(3,index).trim();
+        			  } else if (openBrackets == 3 && stringValue.trim().length() > 0) {
+            			  Object value = stringValue;
+        				  if (stringValue.startsWith("new") && stringValue.indexOf("(")>0) { //$NON-NLS-1$ //$NON-NLS-2$
+        					  int index = stringValue.indexOf("("); //$NON-NLS-1$
+        					  stringValue = stringValue.substring(3,index).trim();
         					  // look up the DataType in the registry and replace the DataType
         					  // name with its Java type equivalent name
-        					  DataTypeFactory dtf = DataTypeRegistry.getFactory(value);
+        					  DataTypeFactory dtf = DataTypeRegistry.getFactory(stringValue);
         					  if (dtf!=null) {
-        						  DataType dt = dtf.createDataType();
-        						  value = dt.getStringType();
+        						  value = dtf.createDataType();
         					  }
         				  }
         				  if (current == Section.PARAMETERS)

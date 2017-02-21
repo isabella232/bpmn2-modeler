@@ -20,6 +20,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatyp
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.EnumDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.FloatDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.IntegerDataType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.ListDataType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.ObjectDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.StringDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.UndefinedDataType;
 import org.eclipse.core.runtime.Assert;
@@ -40,6 +42,8 @@ public class DataTypeRegistry {
 			instance.put("BooleanDataType", new NewInstanceDataTypeFactory(BooleanDataType.class)); //$NON-NLS-1$
 			instance.put("EnumDataType", new NewInstanceDataTypeFactory(EnumDataType.class)); //$NON-NLS-1$
 			instance.put("FloatDataType", new NewInstanceDataTypeFactory(FloatDataType.class)); //$NON-NLS-1$
+			instance.put("ListDataType", new NewInstanceDataTypeFactory(ListDataType.class)); //$NON-NLS-1$
+			instance.put("ObjectDataType", new NewInstanceDataTypeFactory(ObjectDataType.class)); //$NON-NLS-1$
 			instance.put("IntegerDataType", new NewInstanceDataTypeFactory(IntegerDataType.class)); //$NON-NLS-1$
 			instance.put("StringDataType", new NewInstanceDataTypeFactory(StringDataType.class)); //$NON-NLS-1$
 			instance.put("UndefinedDataType", new NewInstanceDataTypeFactory(UndefinedDataType.class)); //$NON-NLS-1$

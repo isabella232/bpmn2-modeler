@@ -16,11 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
-
-import junit.framework.Assert;
 
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDParser;
@@ -28,8 +27,10 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.junit.Assert;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+
 
 /**
  * Basic tests for the WIDHandler
@@ -38,26 +39,22 @@ import org.osgi.framework.Bundle;
  */
 public class TestWIDHandler {
 
-	private String getFile( String filepath ) {
+	private String getWidFile( String filepath ) {
+		Bundle bundle = Activator.getDefault().getBundle();
+		IPath path = new Path("widfiles/"+filepath);
+		URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
+		File setupFile = null;
 		try {
-			if (filepath == null) {
-				Bundle bundle = Activator.getDefault().getBundle();
-				IPath path = new Path("widfiles/logemail.wid");
-				URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
-				File setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
-				filepath = setupFile.getAbsolutePath();
-			} else {
-				Bundle bundle = Activator.getDefault().getBundle();
-				IPath path = new Path(filepath);
-				URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
-				File setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
-				filepath = setupFile.getAbsolutePath();
-			}
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
+		filepath = setupFile.getAbsolutePath();
+		
 		StringBuilder text = new StringBuilder();
 	    String NL = System.getProperty("line.separator");
 	    Scanner scanner = null;
@@ -79,15 +76,15 @@ public class TestWIDHandler {
 	@Test
 	public void testBasic() {
 		System.out.println("testBasic: logemail.wid");
-		String content = getFile(null);
-		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
+		String content = getWidFile("logemail.wid");
+		List<WorkItemDefinition> widMap = new ArrayList<WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);
 		} catch (WIDException e) {
 			Assert.fail("Failed with exception " + e.getMessage());
 		}
 		Assert.assertTrue(!widMap.isEmpty());
-		java.util.Iterator<WorkItemDefinition> widIterator = widMap.values().iterator();
+		java.util.Iterator<WorkItemDefinition> widIterator = widMap.iterator();
 		while(widIterator.hasNext())
 			System.out.println(widIterator.next().toString());
 	}
@@ -95,15 +92,15 @@ public class TestWIDHandler {
 	@Test
 	public void testComplex() {
 		System.out.println("testComplex: widfiles/Email.wid");
-		String content = getFile("widfiles/Email.wid");
-		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
+		String content = getWidFile("Email.wid");
+		List<WorkItemDefinition> widMap = new ArrayList<WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);
 		} catch (WIDException e) {
 			Assert.fail("Failed with exception " + e.getMessage());
 		}
 		Assert.assertTrue(!widMap.isEmpty());
-		java.util.Iterator<WorkItemDefinition> widIterator = widMap.values().iterator();
+		java.util.Iterator<WorkItemDefinition> widIterator = widMap.iterator();
 		while(widIterator.hasNext()) {
 			WorkItemDefinition wid = widIterator.next();
 			Assert.assertTrue(wid.getEclipseCustomEditor() != null &&
@@ -115,15 +112,15 @@ public class TestWIDHandler {
 	@Test
 	public void testResults() {
 		System.out.println("testResults: widfiles/java.wid");
-		String content = getFile("widfiles/java.wid");
-		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
+		String content = getWidFile("java.wid");
+		List<WorkItemDefinition> widMap = new ArrayList<WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);
 		} catch (WIDException e) {
 			Assert.fail("Failed with exception " + e.getMessage());
 		}
 		Assert.assertTrue(!widMap.isEmpty());
-		java.util.Iterator<WorkItemDefinition> widIterator = widMap.values().iterator();
+		java.util.Iterator<WorkItemDefinition> widIterator = widMap.iterator();
 		while(widIterator.hasNext()) {
 			WorkItemDefinition wid = widIterator.next();
 			Assert.assertTrue(!wid.getResults().isEmpty());
@@ -134,7 +131,7 @@ public class TestWIDHandler {
 	@Test
 	public void testFail() {
 		System.out.println("testFail: no wid");
-		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
+		List<WorkItemDefinition> widMap = new ArrayList<WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(null);
 		} catch (WIDException e) {

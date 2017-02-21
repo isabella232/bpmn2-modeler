@@ -150,14 +150,14 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 					loader.load(project);
 					
 					if (loader.getClasspathWIDs().size() > 0) {
-						workItemDefinitions.addAll(loader.getClasspathWIDs().values());
+						workItemDefinitions.addAll(loader.getClasspathWIDs());
 						for (Entry<String, ImageDescriptor> e : loader.getClasspathIcons().entrySet()) {
 							CustomTaskImageProvider.registerImage(e.getKey(), e.getValue());
 						}
 					}
 
 					if (loader.getProjectWIDs().size() > 0) {
-						workItemDefinitions.addAll(loader.getProjectWIDs().values());
+						workItemDefinitions.addAll(loader.getProjectWIDs());
 						for (Entry<String, ImageDescriptor> e : loader.getProjectIcons().entrySet()) {
 							CustomTaskImageProvider.registerImage(e.getKey(), e.getValue());
 						}
@@ -377,7 +377,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	private Property createIOSpecificationSection ( CustomTaskDescriptor ct, WorkItemDefinition wid ) {
 		Property ioSpecification = new Property (null,"ioSpecification", null); //$NON-NLS-1$
 		
-		for (Entry<String, String> entry : wid.getParameters().entrySet()) {
+		for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
 			Property dataInputs = new Property(ioSpecification,"dataInputs", null); //$NON-NLS-1$
 			Property dataInputsName = new Property(dataInputs,"name", null); //$NON-NLS-1$
 			dataInputsName.getValues().add(entry.getKey());
@@ -394,7 +394,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 //			dataOutputs.getValues().add(dataOutputsName);
 //			ioSpecification.getValues().add(dataOutputs);
 //		} else {
-			for (Entry<String, String> entry : wid.getResults().entrySet()) {
+			for (Entry<String, Object> entry : wid.getResults().entrySet()) {
 				Property dataOutputs = new Property(ioSpecification,"dataOutputs", null); //$NON-NLS-1$
 				Property dataOutputsName = new Property(dataOutputs,"name", null); //$NON-NLS-1$
 				dataOutputsName.getValues().add(entry.getKey());

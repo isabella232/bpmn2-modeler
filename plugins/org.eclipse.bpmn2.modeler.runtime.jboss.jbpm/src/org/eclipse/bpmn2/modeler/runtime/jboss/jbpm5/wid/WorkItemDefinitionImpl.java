@@ -41,8 +41,8 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	private String widIcon;
 	private String widCustomEditor;
 	private String widEclipseCustomEditor;
-	private LinkedHashMap<String, String> widParameters;
-	private LinkedHashMap<String, String> widResults;
+	private LinkedHashMap<String, Object> widParameters;
+	private LinkedHashMap<String, Object> widResults;
 	private File file;
 
 	@Override
@@ -71,9 +71,9 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	}
 
 	@Override
-	public LinkedHashMap<String, String> getParameters() {
+	public LinkedHashMap<String, Object> getParameters() {
 		if (this.widParameters == null) 
-			this.widParameters = new LinkedHashMap<String, String>();
+			this.widParameters = new LinkedHashMap<String, Object>();
 		return this.widParameters;
 	}
 	
@@ -132,9 +132,9 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	}
 
 	@Override
-	public LinkedHashMap<String, String> getResults() {
+	public LinkedHashMap<String, Object> getResults() {
 		if (this.widResults == null) 
-			this.widResults = new LinkedHashMap<String, String>();
+			this.widResults = new LinkedHashMap<String, Object>();
 		return this.widResults;
 	}
 
