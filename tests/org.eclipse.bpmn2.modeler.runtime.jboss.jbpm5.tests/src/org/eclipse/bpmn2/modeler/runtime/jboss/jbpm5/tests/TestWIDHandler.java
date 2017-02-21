@@ -10,17 +10,25 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.tests;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
 
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDParser;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
-import org.junit.Test;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.junit.Assert;
+import org.junit.Test;
+import org.osgi.framework.Bundle;
 
 
 /**
@@ -30,12 +38,21 @@ import org.junit.Assert;
  */
 public class TestWIDHandler {
 
-	private String getFile( String filepath ) {
-		if (filepath == null) {
-			filepath = "widfiles/logemail.wid";
+	private String getWidFile( String filepath ) {
+		Bundle bundle = Activator.getDefault().getBundle();
+		IPath path = new Path("widfiles/"+filepath);
+		URL setupUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
+		File setupFile = null;
+		try {
+			setupFile = new File(FileLocator.toFileURL(setupUrl).toURI());
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-		URL url = this.getClass().getClassLoader().getResource(filepath);
-		filepath = url.getPath().toString();
+		filepath = setupFile.getAbsolutePath();
 		
 		StringBuilder text = new StringBuilder();
 	    String NL = System.getProperty("line.separator");
@@ -58,7 +75,7 @@ public class TestWIDHandler {
 	@Test
 	public void testBasic() {
 		System.out.println("testBasic: logemail.wid");
-		String content = getFile(null);
+		String content = getWidFile("logemail.wid");
 		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);
@@ -74,7 +91,7 @@ public class TestWIDHandler {
 	@Test
 	public void testComplex() {
 		System.out.println("testComplex: widfiles/Email.wid");
-		String content = getFile("widfiles/Email.wid");
+		String content = getWidFile("Email.wid");
 		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);
@@ -94,7 +111,7 @@ public class TestWIDHandler {
 	@Test
 	public void testResults() {
 		System.out.println("testResults: widfiles/java.wid");
-		String content = getFile("widfiles/java.wid");
+		String content = getWidFile("java.wid");
 		HashMap<String, WorkItemDefinition> widMap = new HashMap<String, WorkItemDefinition>();
 		try {
 			widMap = WIDParser.parse(content);

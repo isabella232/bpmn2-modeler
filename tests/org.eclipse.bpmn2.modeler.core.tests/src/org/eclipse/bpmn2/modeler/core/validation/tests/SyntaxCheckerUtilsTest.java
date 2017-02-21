@@ -1,7 +1,7 @@
 package org.eclipse.bpmn2.modeler.core.validation.tests;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.junit.Test;
@@ -13,6 +13,10 @@ public class SyntaxCheckerUtilsTest {
 		assertTrue( SyntaxCheckerUtils.isJavaIdentifier("_ab") );
 		assertTrue( SyntaxCheckerUtils.isJavaIdentifier("a1b") );
 		assertTrue( SyntaxCheckerUtils.isJavaIdentifier("_ab") );
+	}
+	
+	@Test
+	public void testIsJavaIdentifierUTF8() throws Exception {
 		assertTrue( SyntaxCheckerUtils.isJavaIdentifier("形声") );
 	}
 	

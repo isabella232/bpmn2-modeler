@@ -10,8 +10,18 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.validation;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
+import java.util.List;
+
 public class SyntaxCheckerUtils {
 	private static char invalidChar;
+	private final static Charset charsetUTF8 = Charset.forName("UTF-8");
+	private final static CharsetDecoder utf8Decoder = charsetUTF8.newDecoder();
 	
 	public static char getInvalidChar() {
 		return invalidChar;
@@ -19,7 +29,7 @@ public class SyntaxCheckerUtils {
 	
 	public static final boolean isQName(String name) {
 		invalidChar = 0;
-		String parts[] = name.split(":"); //$NON-NLS-1$
+		UTF8String parts[] = new UTF8String(name).split(':');
 		if (parts.length==1 && !name.endsWith(":")) { //$NON-NLS-1$
 			return isNCName(parts[0]);
 		}
@@ -31,11 +41,11 @@ public class SyntaxCheckerUtils {
 			invalidChar = ':';
 		return false;
 	}
-	
+
 	public static String toQName(String name) {
 		if (name==null || name.isEmpty())
 			return "_"; //$NON-NLS-1$
-		String parts[] = name.split(":"); //$NON-NLS-1$
+		UTF8String parts[] = new UTF8String(name).split(':');
 		if (parts.length==1) {
 			return toNCName(parts[0]);
 		}
@@ -44,8 +54,13 @@ public class SyntaxCheckerUtils {
 		}
 		return toNCName(name);
 	}
-	
+
 	public static final boolean isNCName(String name) {
+		return isNCName(new UTF8String(name));
+	}
+
+	
+	private static boolean isNCName(UTF8String name) {
 		invalidChar = 0;
 		if (name==null || name.isEmpty())
 			return false;
@@ -72,6 +87,10 @@ public class SyntaxCheckerUtils {
 	}
 
 	public static final String toNCName(String name) {
+		return toNCName(new UTF8String(name));
+	}		
+
+	private static String toNCName(UTF8String name) {
 		if (name==null || name.isEmpty())
 			return "_"; //$NON-NLS-1$
 		
@@ -98,7 +117,7 @@ public class SyntaxCheckerUtils {
 		return ncname.toString();
 	}
 	
-	public static final boolean isNCNameChar(char c) {
+	private static final boolean isNCNameChar(char c) {
 		boolean result = _isAsciiBaseChar(c) || _isAsciiDigit(c) || c == '.' || c == '-' || c == '_' || _isNonAsciiBaseChar(c)
 				|| _isNonAsciiDigit(c) || isIdeographic(c) || isCombiningChar(c) || isExtender(c);
 		if (!result)
@@ -111,15 +130,14 @@ public class SyntaxCheckerUtils {
 		if (name==null || name.isEmpty())
 			return false;
 		
-		int nameLength = name.length();
-
-		// Check first character
-		char c = name.charAt(0);
+		UTF8String utf8string = new UTF8String(name);
+		char c = utf8string.charAt(0);
+		int nameLength = utf8string.length();
 
 		if (Character.isJavaIdentifierStart(c)) {
 			// Check the rest of the characters
 			for (int i = 1; i < nameLength; i++) {
-				c = name.charAt(i);
+				c = utf8string.charAt(i);
 				if (!Character.isJavaIdentifierPart(c)) {
 					invalidChar = c;
 					return false;
@@ -258,7 +276,7 @@ public class SyntaxCheckerUtils {
 		return true;
 	}
 
-	public static final boolean isLetter(char c) {
+	private static final boolean isLetter(char c) {
 		return _isAsciiBaseChar(c) || _isNonAsciiBaseChar(c) || isIdeographic(c);
 	}
 
@@ -404,11 +422,11 @@ public class SyntaxCheckerUtils {
 				|| _charInRange(c, 0x3105, 0x312C) || _charInRange(c, 0xAC00, 0xD7A3);
 	}
 
-	public static final boolean isIdeographic(char c) {
+	private static final boolean isIdeographic(char c) {
 		return _charInRange(c, 0x4E00, 0x9FA5) || c == 0x3007 || _charInRange(c, 0x3021, 0x3029);
 	}
 
-	public static final boolean isCombiningChar(char c) {
+	private static final boolean isCombiningChar(char c) {
 		return _charInRange(c, 0x0300, 0x0345) || _charInRange(c, 0x0360, 0x0361) || _charInRange(c, 0x0483, 0x0486)
 				|| _charInRange(c, 0x0591, 0x05A1) || _charInRange(c, 0x05A3, 0x05B9)
 				|| _charInRange(c, 0x05BB, 0x05BD) || c == 0x05BF || _charInRange(c, 0x05C1, 0x05C2) || c == 0x05C4
@@ -446,7 +464,7 @@ public class SyntaxCheckerUtils {
 				|| c == 0x309A;
 	}
 
-	public static final boolean isDigit(char c) {
+	private static final boolean isDigit(char c) {
 		return _isAsciiDigit(c) || _isNonAsciiDigit(c);
 	}
 
@@ -464,7 +482,7 @@ public class SyntaxCheckerUtils {
 				|| _charInRange(c, 0x0F20, 0x0F29);
 	}
 
-	public static final boolean isExtender(char c) {
+	private static final boolean isExtender(char c) {
 		return c == 0x00B7 || c == 0x02D0 || c == 0x02D1 || c == 0x0387 || c == 0x0640 || c == 0x0E46 || c == 0x0EC6
 				|| c == 0x3005 || _charInRange(c, 0x3031, 0x3035) || _charInRange(c, 0x309D, 0x309E)
 				|| _charInRange(c, 0x30FC, 0x30FE);
@@ -472,5 +490,82 @@ public class SyntaxCheckerUtils {
 
 	private static final boolean _charInRange(char c, int start, int end) {
 		return c >= start && c <= end;
+	}
+	
+	private static CharBuffer decodeUTF8(String name) {
+		CharBuffer charbuf = null;
+		try {
+			charbuf = utf8Decoder.decode(ByteBuffer.wrap(name.getBytes()));
+		} catch (CharacterCodingException e) {
+			// if decoding fails, treat name as a normal non-encoded string
+			charbuf = CharBuffer.allocate(name.length());
+			charbuf.put(name);
+		}
+		return charbuf;
+	}
+	
+	public static class UTF8String {
+		private CharBuffer charbuf = null;
+		
+		public UTF8String(String name) {
+			try {
+				charbuf = utf8Decoder.decode(ByteBuffer.wrap(name.getBytes()));
+			} catch (CharacterCodingException e) {
+				// if decoding fails, treat name as a normal non-encoded string
+				charbuf = CharBuffer.allocate(name.length());
+				charbuf.put(name);
+			}
+		}
+
+		public UTF8String(char[] src, int offset, int length) {
+			charbuf = CharBuffer.allocate(length);
+			charbuf.put(src, offset, length);
+		}
+		
+		public char charAt(int index) {
+			return charbuf.charAt(index);
+		}
+		
+		public UTF8String[] split(char sepc) {
+			List<UTF8String> parts = new ArrayList<UTF8String>();
+			int i0 = 0;
+			for (int i=0; i<charbuf.length(); ++i) {
+				char c = charbuf.charAt(i);
+				if (sepc == c) {
+					UTF8String part = new UTF8String(charbuf.array(), i0, i-i0);
+					i0 = i + 1;
+					parts.add(part);
+				}
+				else if (i==charbuf.length()-1) {
+					UTF8String part = new UTF8String(charbuf.array(), i0, i+1-i0);
+					parts.add(part);
+				}
+			}
+			if (parts.size()==0)
+				return new UTF8String[] { this };
+			return parts.toArray(new UTF8String[parts.size()]);
+		}
+		
+		public boolean isEmpty() {
+			return charbuf.limit()==0;
+		}
+		
+		public int length() {
+			return charbuf.limit();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return toString().equals(obj.toString());
+		}
+
+		@Override
+		public String toString() {
+			int pos = charbuf.position();
+			charbuf.position(0);
+			String s = charbuf.toString();
+			charbuf.position(pos);
+			return s;
+		}
 	}
 }
