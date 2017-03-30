@@ -34,6 +34,8 @@ import org.eclipse.bpmn2.PotentialOwner;
 import org.eclipse.bpmn2.ResourceAssignmentExpression;
 import org.eclipse.bpmn2.ResourceRole;
 import org.eclipse.bpmn2.Task;
+import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.IConstants;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.features.CustomElementFeatureContainer;
@@ -58,6 +60,7 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer.ConfigureWorkItemFeature;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.DroolsProxy;
+import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParameterMappingColumn;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
@@ -72,6 +75,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 /**
  * @author Bob Brodt
@@ -169,36 +173,14 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	protected void createInputParameterBindings(final Task task) {
 		// Does the WID for this Task define a Work Item Editor dialog?
 		// If so, do not display the WID parameters in this Property tab.
-		boolean hasWorkItemEditor = false;
 		final IFeatureProvider fp = getDiagramEditor().getDiagramTypeProvider().getFeatureProvider();
 		final PictogramElement pe = fp.getPictogramElementForBusinessObject(task);
 		final CustomContext cc = new CustomContext(new PictogramElement[] { pe });
 		for (ICustomFeature cf : fp.getCustomFeatures(cc)) {
 			if (cf.isAvailable(cc) && cf.canExecute(cc) && cf instanceof ConfigureWorkItemFeature) {
-				hasWorkItemEditor = true;
-				break;
+				((ConfigureWorkItemFeature)cf).createConfigureButton(this, task);
+				return;
 			}
-		}
-		if (hasWorkItemEditor) {
-			// TODO:
-			// 1. create a New Work Item Editor wizard that copies the required
-			// java interfaces and a sample implementation into the user's
-			// java project.
-			// 2. hook the ButtonObjectEditor into an action that pops up
-			// the Work Item Editor.
-			ButtonObjectEditor button = new ButtonObjectEditor(this, task, null) {
-				@Override
-				protected void buttonClicked() {
-					for (ICustomFeature cf : fp.getCustomFeatures(cc)) {
-						if (cf instanceof ConfigureWorkItemFeature) {
-							cf.execute(cc);
-							break;
-						}
-					}
-				}
-			};
-			button.createControl(this.getAttributesParent(), "Edit Work Item Parameters");
-			return;
 		}
     	
 		// Get the Model Extension Descriptor for this Custom Task.

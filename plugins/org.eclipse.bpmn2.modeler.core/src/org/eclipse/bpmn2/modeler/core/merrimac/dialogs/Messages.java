@@ -22,7 +22,6 @@ public class Messages extends NLS {
 	public static String FeatureEditingDialog_Edit;
 	public static String FeatureListObjectEditor_Title;
 	public static String FloatObjectEditor_Invalid_Character;
-	public static String IDEditor_2;
 	public static String IDEditor_Duplicate_ID;
 	public static String IDEditor_Edit_ID;
 	public static String IDEditor_Enter_New_ID_for;

@@ -10,7 +10,7 @@ public class Work {
 	public Work(WorkItemEditor wie) {
 		this.wie = wie;
 		work = wie.drools.newObject("WorkImpl");
-		setName(wie.task.getName());
+		setName(wie.wid.getDisplayName());
 	}
 	
 	public Work(WorkItemEditor wie, Object work) {

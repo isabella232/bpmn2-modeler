@@ -15,6 +15,7 @@ package org.eclipse.bpmn2.modeler.core.utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -118,5 +119,22 @@ public class FileUtils {
 		String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 		String uriDir = uri.trimFragment().trimSegments(1).devicePath();
 		return tempDir!=null && tempDir.compareToIgnoreCase(uriDir)==0;
+	}
+
+	public static byte[] readStream(InputStream inputstream) throws IOException {
+	    byte bytes[] = (byte[]) null;
+	    int i = 0;
+	    byte tempBytes[] = new byte[1024];
+	    for (int j = inputstream.read(tempBytes); j != -1; j = inputstream.read(tempBytes)) {
+	        byte tempBytes2[] = new byte[i + j];
+	        if (i > 0) {
+	            System.arraycopy(bytes, 0, tempBytes2, 0, i);
+	        }
+	        System.arraycopy(tempBytes, 0, tempBytes2, i, j);
+	        bytes = tempBytes2;
+	        i += j;
+	    }
+	
+	    return bytes;
 	}
 }

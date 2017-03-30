@@ -118,7 +118,6 @@ public class SyntaxCheckerUtils {
 			return false;
 		
 		try {
-			System.out.println("isJavaIdentifier checking for UTF8 string");
 			CharBuffer charbuf = charsetUTF8.newDecoder().decode(ByteBuffer.wrap(name.getBytes()));
 			char c = charbuf.charAt(0);
 			int nameLength = charbuf.length();

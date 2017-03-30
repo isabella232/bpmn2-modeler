@@ -28,11 +28,14 @@ import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ItemKind;
 import org.eclipse.bpmn2.OutputSet;
 import org.eclipse.bpmn2.Task;
+import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
+import org.eclipse.bpmn2.modeler.core.IConstants;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.features.CustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.CustomShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ButtonObjectEditor;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.ModelDecorator;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
@@ -43,13 +46,12 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ShapeDecoratorUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmTaskFeatureContainer.JbpmAddTaskFeature;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmTaskDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition.Parameter;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.DroolsProxy;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.ParameterDefinition;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.Work;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.WorkDefinition;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.WorkItemEditor;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
@@ -68,14 +70,13 @@ import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
+import org.eclipse.graphiti.features.context.impl.CustomContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer {
 	
@@ -238,7 +239,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
     	TargetRuntime rt = TargetRuntime.getRuntime(task);
     	JBPM5RuntimeExtension rte = (JBPM5RuntimeExtension)rt.getRuntimeExtension();
     	WorkItemDefinition wid = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(customTaskId);
-    	Dialog dialog = null;
     	WorkItemEditor workItemEditor = null;
     	
     	if (wid!=null) {
@@ -275,6 +275,28 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 			this.fp = fp;
 		}
 
+		public void createConfigureButton(JbpmTaskDetailComposite detailComposite, Task task) {
+			final PictogramElement pe = fp.getPictogramElementForBusinessObject(task);
+			final CustomContext cc = new CustomContext(new PictogramElement[] { pe });
+
+			ButtonObjectEditor button = new ButtonObjectEditor(detailComposite, task, null) {
+				
+				@Override
+				protected Control createControl(Composite composite, String label, int style) {
+					Control control = super.createControl(composite, label, style);
+					defaultButton.setImage(Activator.getDefault().getImage(IConstants.ICON_CONFIGURE_20));
+					return control;
+				}
+
+				@Override
+				protected void buttonClicked() {
+					ConfigureWorkItemFeature.this.execute(cc);
+				}
+			};
+			button.createControl(detailComposite.getAttributesParent(), Messages.JbpmCustomTaskFeatureContainer_Name);
+			
+		}
+		
 		/* (non-Javadoc)
 		 * @see org.eclipse.graphiti.features.IFeature#isAvailable(org.eclipse.graphiti.features.context.IContext)
 		 */
@@ -359,7 +381,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 			WorkItemDefinition workItemDefinition = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(taskName);
 			
 			Hashtable<String, ParameterDefinition> parameterDefinitions = new Hashtable<String, ParameterDefinition>();
-			WorkDefinition workDefinition = workItemEditor.getWorkDefinition();
 			for (Entry<String, Parameter> entry : workItemDefinition.getParameters().entrySet()) {
 				String name = entry.getKey();
 				ParameterDefinition parameterDefinition = workItemEditor.getWorkDefinition().getParameter(name);
@@ -374,7 +395,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 					ParameterDefinition parameterDefinition = parameterDefinitions.get(name);
 					if (parameterDefinition!=null) {
 						// set the value of this parameter for WorkImpl
-						Object type = parameterDefinition.getType();
 						Object value = null;
 						if (dia.getAssignment().isEmpty()) {
 							value = parameterDefinition.setStringValue("");
@@ -446,6 +466,9 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 						}
 					}
 				}
+				// TODO: how to deal with Custom Task results (outputs)?
+				// these can be handled in the standard property page, but do
+				// we need to pass these to the WorkItemEditor?
 			}
 		}
 

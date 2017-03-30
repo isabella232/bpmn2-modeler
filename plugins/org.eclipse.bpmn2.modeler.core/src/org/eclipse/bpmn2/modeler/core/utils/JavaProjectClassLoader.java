@@ -125,6 +125,10 @@ public class JavaProjectClassLoader {
 		}
 		return null;
 	}
+	
+	public IJavaProject getJavaProject() {
+		return javaProject;
+	}
 
 	private URLClassLoader getClassLoader() {
 		if (classLoader==null) {
