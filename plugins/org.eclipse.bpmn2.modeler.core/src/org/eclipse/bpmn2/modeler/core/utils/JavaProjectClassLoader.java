@@ -120,7 +120,6 @@ public class JavaProjectClassLoader {
 			try {
 				return classLoader.loadClass(name);
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -138,7 +137,7 @@ public class JavaProjectClassLoader {
 					URL url = path.toFile().toURI().toURL();
 					urlList.add(url);
 				}
-				ClassLoader parentClassLoader = javaProject.getClass().getClassLoader();
+				ClassLoader parentClassLoader = JavaProjectClassLoader.class.getClassLoader();
 				URL[] urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
 				classLoader = new URLClassLoader(urls, parentClassLoader);
 			} catch (Exception e) {

@@ -1050,7 +1050,7 @@ public class ModelUtil {
 	 */
 	public static String getExpressionBody(FormalExpression expression) {
 		String body = null;
-        if (expression.getMixed() != null && !expression.getMixed().isEmpty()) {
+        if (expression!=null && expression.getMixed() != null && !expression.getMixed().isEmpty()) {
             StringBuilder result = new StringBuilder();
             boolean isNull = true;
             for (FeatureMap.Entry cur : expression.getMixed()) {

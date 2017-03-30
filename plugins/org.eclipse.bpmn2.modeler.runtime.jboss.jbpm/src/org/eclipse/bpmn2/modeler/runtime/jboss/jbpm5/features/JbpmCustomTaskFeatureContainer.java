@@ -12,16 +12,16 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.DataOutput;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.InputSet;
 import org.eclipse.bpmn2.ItemDefinition;
@@ -42,20 +42,15 @@ import org.eclipse.bpmn2.modeler.core.utils.JavaProjectClassLoader;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ShapeDecoratorUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.customeditor.SampleCustomEditor;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.ParameterDefinition;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.Work;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkEditor;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataType;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeFactory;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.StringDataType;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.ParameterDefinitionImpl;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkDefinitionImpl;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmTaskFeatureContainer.JbpmAddTaskFeature;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition.Parameter;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.DroolsProxy;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.ParameterDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.Work;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.WorkDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.WorkItemEditor;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
 import org.eclipse.bpmn2.modeler.ui.features.activity.task.TaskFeatureContainer;
@@ -77,7 +72,10 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer {
 	
@@ -145,7 +143,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 			WorkItemDefinition wid = rx.getWorkItemDefinition(id);
 			if (ioSpecification!=null && wid!=null) {
 				for (DataInput input : ioSpecification.getDataInputs()) {
-					for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
+					for (Entry<String, Parameter> entry : wid.getParameters().entrySet()) {
 						if (input.getName().equals(entry.getKey())) {
 							if (entry.getValue()!=null)
 								input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
@@ -154,7 +152,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 					}
 				}
 				for (DataOutput output : ioSpecification.getDataOutputs()) {
-					for (Entry<String, Object> entry : wid.getResults().entrySet()) {
+					for (Entry<String, Parameter> entry : wid.getResults().entrySet()) {
 						if (output.getName().equals(entry.getKey())) {
 							if (entry.getValue()!=null)
 								output.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
@@ -214,11 +212,19 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		return thisFeatures;
 	}
 
+	private static JavaProjectClassLoader getProjectClassLoader(BaseElement baseElement) {
+		Resource res = ExtendedPropertiesAdapter.getResource(baseElement);
+		URI uri = res.getURI();
+		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
+		JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
+		return cl;
+	}
+	
 	/**
 	 * Returns the Java class that implements a Work Item Editor dialog for the
 	 * given BaseElement if the WID file defines one.
 	 * 
-	 * @param baseElement
+	 * @param task
 	 * @return a Work Item Editor dialog class or null if the BaseElement is not
 	 *         a custom task (defined by a WID file) or if the WID file does
 	 *         declare a "eclipse:customEditor" class.
@@ -226,61 +232,35 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 	 * TODO: make this return an object instance and make sure it implements
 	 * the {@code WorkEditor} interface.
 	 */
-	public static WorkEditor getWorkItemEditor(BaseElement baseElement) {
-		String customTaskId = CustomElementFeatureContainer.findId(baseElement);
-    	TargetRuntime rt = TargetRuntime.getRuntime(baseElement);
+	@SuppressWarnings("rawtypes")
+	private static WorkItemEditor getWorkItemEditor(Task task) {
+		String customTaskId = CustomElementFeatureContainer.findId(task);
+    	TargetRuntime rt = TargetRuntime.getRuntime(task);
     	JBPM5RuntimeExtension rte = (JBPM5RuntimeExtension)rt.getRuntimeExtension();
     	WorkItemDefinition wid = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(customTaskId);
-    	WorkEditor editor = null;
+    	Dialog dialog = null;
+    	WorkItemEditor workItemEditor = null;
+    	
     	if (wid!=null) {
 	    	String customEditor = wid.getEclipseCustomEditor();
 	    	if (customEditor!=null && !customEditor.isEmpty()) {
-				try {
-					Resource res = ExtendedPropertiesAdapter.getResource(baseElement);
-					URI uri = res.getURI();
-					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
-		    		JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
-		    		if (cl!=null) {
-		    			editor = new SampleCustomEditor(Display.getDefault().getActiveShell());
-		    			Work work = new WorkImpl();
-		    			// set actual parameter values from Task object here...
-		    			work.setName(((Activity)baseElement).getName());
-		    			Map<String, Object> parameters = new HashMap<String, Object>();
-		    			parameters.putAll(wid.getParameters());
-		    			work.setParameters(parameters);
-		    			editor.setWork(work);
-		    			
-		    			WorkDefinitionImpl workDefinition = new WorkDefinitionImpl();
-		    			for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
-		    				ParameterDefinitionImpl pd = new ParameterDefinitionImpl();
-		    				pd.setName(entry.getKey());
-		    				DataType type;
-		    				if (entry.getValue() instanceof DataType)
-		    					type = (DataType) entry.getValue();
-		    				else
-		    					type = new StringDataType();
-		    				pd.setType(type);
-			    			workDefinition.addParameter(pd);
-			    			work.addParameterDefinition(pd);
-		    			}
-		    			for (Entry<String, Object> entry : wid.getResults().entrySet()) {
-		    				ParameterDefinitionImpl pd = new ParameterDefinitionImpl();
-		    				pd.setName(entry.getKey());
-		    				DataType type;
-		    				if (entry.getValue() instanceof DataType)
-		    					type = (DataType) entry.getValue();
-		    				else
-		    					type = new StringDataType();
-		    				pd.setType(type);
-			    			workDefinition.addResult(pd);
-		    			}
-		    			editor.setWorkDefinition(workDefinition);
-		    		}
-				} catch (Exception ignore) {
-				}
+    			workItemEditor = WorkItemEditor.create(wid, task);
+    			if (workItemEditor!=null) {
+	    			// set actual parameter values from Task object here...
+	    			for (Entry<String, Parameter> entry : wid.getParameters().entrySet()) {
+	    				ParameterDefinition parameterDefinition = workItemEditor.getParameter(entry.getKey());
+	    				Parameter parameter = entry.getValue();
+	    				parameterDefinition.setType(parameter.type);
+	    			}
+	    			for (Entry<String, Parameter> entry : wid.getResults().entrySet()) {
+	    				ParameterDefinition parameterDefinition = workItemEditor.getResult(entry.getKey());
+	    				Parameter parameter = entry.getValue();
+	    				parameterDefinition.setType(parameter.type);
+	    			}
+    			}
 			}
     	}
-    	return editor;
+    	return workItemEditor;
 	}
 	
 	public class ConfigureWorkItemFeature implements ICustomFeature {
@@ -322,8 +302,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		 */
 		@Override
 		public boolean canExecute(IContext context) {
-			// TODO: clean this mess up: use {@code getWorkItemEditor()) to check if the selected task
-			// has a WID and if the WID defines a customEditor
 			BPMN2Editor editor = (BPMN2Editor)getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
 			IBpmn2RuntimeExtension rte = editor.getTargetRuntime().getRuntimeExtension();
 			if (rte instanceof JBPM5RuntimeExtension && context instanceof ICustomContext) {
@@ -337,7 +315,8 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 							if ("taskName".equals(f.getName())) { //$NON-NLS-1$
 								// make sure the Work Item Definition exists
 								String taskName = (String)task.eGet(f);
-								return ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(taskName) != null;
+								WorkItemDefinition wid = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(taskName);
+								return wid!=null && wid.getEclipseCustomEditor()!=null;
 							}
 						}
 					}
@@ -359,8 +338,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 		 */
 		@Override
 		public void execute(IContext context) {
-			// TODO: clean this mess up: use {@code getWorkItemEditor()) to check if the selected task
-			// has a WID and if the WID defines a customEditor
 			BPMN2Editor editor = (BPMN2Editor)getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getDiagramContainer();
 			PictogramElement pe = ((ICustomContext) context).getPictogramElements()[0];
 			final Task task = (Task)Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(pe);
@@ -373,90 +350,94 @@ public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer 
 				}
 			}
 			
+			// get the WorkEditor dialog
+			WorkItemEditor workItemEditor = getWorkItemEditor(task);
+			if (workItemEditor==null)
+				return;
+			
 			IBpmn2RuntimeExtension rte = editor.getTargetRuntime().getRuntimeExtension();
 			WorkItemDefinition workItemDefinition = ((JBPM5RuntimeExtension)rte).getWorkItemDefinition(taskName);
 			
-			WorkDefinitionImpl wd = new WorkDefinitionImpl();
-			for (String name : workItemDefinition.getParameters().keySet()) {
-				Object type = workItemDefinition.getParameters().get(name);
-				DataTypeFactory factory = null;
-				if (type instanceof DataType) {
-					factory = DataTypeRegistry.getFactory(((DataType)type).getStringType());
-				}
-				else if (type instanceof String) {
-					factory = DataTypeRegistry.getFactory((String)type);
-				}
-				if (factory!=null)
-					wd.addParameter( new ParameterDefinitionImpl(name,factory.createDataType()) );
+			Hashtable<String, ParameterDefinition> parameterDefinitions = new Hashtable<String, ParameterDefinition>();
+			WorkDefinition workDefinition = workItemEditor.getWorkDefinition();
+			for (Entry<String, Parameter> entry : workItemDefinition.getParameters().entrySet()) {
+				String name = entry.getKey();
+				ParameterDefinition parameterDefinition = workItemEditor.getWorkDefinition().getParameter(name);
+				parameterDefinitions.put(name, parameterDefinition);
 			}
 			
-			WorkImpl w = new WorkImpl();
-			w.setName(taskName);
-			w.setParameterDefinitions(wd.getParameters());
+			Work work = workItemEditor.getWork();
 			for (DataInputAssociation dia : task.getDataInputAssociations()) {
 				DataInput dataInput = (DataInput)dia.getTargetRef();
 				if (dataInput!=null) {
 					String name = dataInput.getName();
-					ItemDefinition itemDefinition = dataInput.getItemSubjectRef();
-					if (itemDefinition!=null) {
-						Object structureRef = itemDefinition.getStructureRef();
-						if (ModelUtil.isStringWrapper(structureRef)) {
-							ParameterDefinition parameterDefinition = w.getParameterDefinition(name);
-							try {
-								Object value = parameterDefinition.getType().readValue(ModelUtil.getStringWrapperTextValue(structureRef));
-								w.setParameter(name, value);
-							}
-							catch (Exception e) {
-							}
+					ParameterDefinition parameterDefinition = parameterDefinitions.get(name);
+					if (parameterDefinition!=null) {
+						// set the value of this parameter for WorkImpl
+						Object type = parameterDefinition.getType();
+						Object value = null;
+						if (dia.getAssignment().isEmpty()) {
+							value = parameterDefinition.setStringValue("");
 						}
+						else {
+							String body = ModelUtil.getExpressionBody(((FormalExpression)dia.getAssignment().get(0).getFrom()));
+							value = parameterDefinition.setStringValue(body);
+						}
+						work.setParameter(name, value);
 					}
 				}
 			}
 
-			/*
-			 * Load the class defined in the WID's "eclipse:customEditor" field.
-			 * This means that the containing Project must be a JavaProject, and
-			 * the class must exist and must implement the WorkEditor interface.
-		try {
-			Resource res = ExtendedPropertiesAdapter.getResource(task);
-			URI uri = res.getURI();
-			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(uri.segment(1));
-			JavaProjectClassLoader cl = new JavaProjectClassLoader(project);
-			Class c = cl.loadClass("org.bpmn2.java.Calculator");
-			Object o = c.newInstance();
-			String s = o.toString();
-			System.out.println(s);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-			 */
-			
-			WorkEditor dialog = getWorkItemEditor(task);
-			dialog.setWorkDefinition(wd);
-			dialog.setWork(w);
-			dialog.show();
-			
-			hasChanges = dialog.getWork() != w;
-			if (hasChanges) {
-				w = (WorkImpl) dialog.getWork();
+			if (workItemEditor.show()) {
+				hasChanges = true;
+				work = workItemEditor.getWork();
 				for (DataInputAssociation dia : task.getDataInputAssociations()) {
 					DataInput dataInput = (DataInput)dia.getTargetRef();
 					if (dataInput!=null) {
 						String name = dataInput.getName();
 						ItemDefinition itemDefinition = dataInput.getItemSubjectRef();
 						// this always comes back as a String from the SampleCustomEditor dialog
-						String value = (String)w.getParameter(name);
-						if (value!=null && !value.isEmpty()) {
-							EObject structureRef = ModelUtil.createStringWrapper(value);
-							if (itemDefinition==null) {
-								itemDefinition = Bpmn2ModelerFactory.createObject(task.eResource(), ItemDefinition.class);
-								ModelUtil.getDefinitions(task).getRootElements().add(itemDefinition);
-								ModelUtil.setID(itemDefinition);
+						Object parameterValue = work.getParameter(name);
+						if (parameterValue!=null) {
+							ParameterDefinition parameterDefinition = parameterDefinitions.get(name);
+							Object type = parameterDefinition.getType();
+							String value = parameterDefinition.getStringValue(parameterValue);
+							if (dia.getAssignment().isEmpty()) {
+								String typename = type.getClass().getName();
+								EObject structureRef = ModelUtil.createStringWrapper(typename);
+								if (itemDefinition==null) {
+									itemDefinition = Bpmn2ModelerFactory.createObject(task.eResource(), ItemDefinition.class);
+									ModelUtil.getDefinitions(task).getRootElements().add(itemDefinition);
+									ModelUtil.setID(itemDefinition);
+								}
+								itemDefinition.setItemKind(ItemKind.INFORMATION);
+								itemDefinition.setStructureRef(structureRef);
+								dataInput.setItemSubjectRef(itemDefinition);
+								
+								FormalExpression from = Bpmn2ModelerFactory.createObject(task.eResource(), FormalExpression.class);
+								from.setBody(value);
+								FormalExpression to = Bpmn2ModelerFactory.createObject(task.eResource(), FormalExpression.class);
+								to.setBody(dia.getTargetRef().getId());
+								Assignment assignment = Bpmn2ModelerFactory.createObject(task.eResource(), Assignment.class);
+								assignment.setFrom(from);
+								assignment.setTo(to);
+								dia.getAssignment().add(assignment);
 							}
-							itemDefinition.setItemKind(ItemKind.INFORMATION);
-							itemDefinition.setStructureRef(structureRef);
-							dataInput.setItemSubjectRef(itemDefinition);
+							else {
+								Assignment assignment = dia.getAssignment().get(0);
+								FormalExpression from = (FormalExpression) assignment.getFrom();
+								if (from==null) {
+									from = Bpmn2ModelerFactory.createObject(task.eResource(), FormalExpression.class);
+									assignment.setFrom(from);
+								}
+								FormalExpression to = (FormalExpression) assignment.getTo();
+								if (to==null) {
+									to = Bpmn2ModelerFactory.createObject(task.eResource(), FormalExpression.class);
+									to.setBody(dia.getTargetRef().getId());
+									assignment.setTo(to);
+								}
+								from.setBody(value);
+							}
 						}
 						else if (itemDefinition!=null) {
 							// TODO: remove Item Definition if it is on longer referenced anywhere

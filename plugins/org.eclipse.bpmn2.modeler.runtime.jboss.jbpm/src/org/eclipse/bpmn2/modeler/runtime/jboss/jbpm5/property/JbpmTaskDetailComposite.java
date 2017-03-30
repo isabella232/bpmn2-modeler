@@ -14,8 +14,9 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
@@ -54,22 +55,20 @@ import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.Work;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkDefinition;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkDefinitionExtension;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.ParameterDefinition;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.WorkEditor;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkImpl;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkDefinitionImpl;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkDefinitionExtensionImpl;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.ParameterDefinitionImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer.ConfigureWorkItemFeature;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.editor.DroolsProxy;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParameterMappingColumn;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.context.impl.CustomContext;
+import org.eclipse.graphiti.features.custom.ICustomFeature;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -168,11 +167,19 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	 * @param task
 	 */
 	protected void createInputParameterBindings(final Task task) {
-		
 		// Does the WID for this Task define a Work Item Editor dialog?
 		// If so, do not display the WID parameters in this Property tab.
-		final WorkEditor workEditor = JbpmCustomTaskFeatureContainer.getWorkItemEditor(task);
-		if (workEditor!=null) {
+		boolean hasWorkItemEditor = false;
+		final IFeatureProvider fp = getDiagramEditor().getDiagramTypeProvider().getFeatureProvider();
+		final PictogramElement pe = fp.getPictogramElementForBusinessObject(task);
+		final CustomContext cc = new CustomContext(new PictogramElement[] { pe });
+		for (ICustomFeature cf : fp.getCustomFeatures(cc)) {
+			if (cf.isAvailable(cc) && cf.canExecute(cc) && cf instanceof ConfigureWorkItemFeature) {
+				hasWorkItemEditor = true;
+				break;
+			}
+		}
+		if (hasWorkItemEditor) {
 			// TODO:
 			// 1. create a New Work Item Editor wizard that copies the required
 			// java interfaces and a sample implementation into the user's
@@ -182,10 +189,10 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 			ButtonObjectEditor button = new ButtonObjectEditor(this, task, null) {
 				@Override
 				protected void buttonClicked() {
-					if (workEditor.show()) {
-						Work work = workEditor.getWork();
-						for (Entry<String, Object> entry : work.getParameters().entrySet()) {
-							System.out.println(entry.getKey()+"="+entry.getValue());
+					for (ICustomFeature cf : fp.getCustomFeatures(cc)) {
+						if (cf instanceof ConfigureWorkItemFeature) {
+							cf.execute(cc);
+							break;
 						}
 					}
 				}

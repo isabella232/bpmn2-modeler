@@ -34,7 +34,6 @@ import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.ModelDecorator;
 import org.eclipse.bpmn2.modeler.core.utils.ImportUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimPackage;
@@ -346,9 +345,9 @@ public class JbpmModelUtil {
 		else if (value instanceof GlobalType) {
 			stringValue = ((GlobalType)value).getType();
 		}
-		else if (value instanceof DataType) {
-			stringValue = ((DataType)value).getStringType();
-		}
+//		else if (value instanceof DataType) {
+//			stringValue = ((DataType)value).getStringType();
+//		}
 		else if (value instanceof ImportType) {
 			stringValue = ((ImportType)value).getName();
 		}
@@ -377,9 +376,9 @@ public class JbpmModelUtil {
 		else if (value instanceof GlobalType) {
 			itemDef = findOrCreateItemDefinition( context, ((GlobalType)value).getType() );
 		}
-		else if (value instanceof DataType) {
-			itemDef = findOrCreateItemDefinition( context, ((DataType)value).getStringType() );
-		}
+//		else if (value instanceof DataType) {
+//			itemDef = findOrCreateItemDefinition( context, ((DataType)value).getStringType() );
+//		}
 		else if (value instanceof ImportType) {
 			itemDef = findOrCreateItemDefinition( context, ((ImportType)value).getName() );
 		}

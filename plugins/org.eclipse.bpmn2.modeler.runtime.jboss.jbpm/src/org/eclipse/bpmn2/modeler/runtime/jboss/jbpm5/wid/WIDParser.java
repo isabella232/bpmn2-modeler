@@ -15,9 +15,6 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeFactory;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
-
 /**
  * @author bfitzpat
  *
@@ -60,6 +57,13 @@ public class WIDParser {
           for (int i = 0; i < strings.length; i++) {
         	  String trim = strings[i].trim();
         	  if (trim.length() == 0) continue;
+        	  if (trim.startsWith("import ") || trim.startsWith("import\t")) {
+        		  // collect "import" statements so we can resolve fully qualified class names
+        		  // in Parameters and Results types
+        		  String fullyQualifiedClassName = trim.substring(7, trim.length()-1);
+        		  currentWid.addImport(fullyQualifiedClassName);
+        	  }
+        	  
         	  if (trim.startsWith("[") || trim.endsWith("[") || trim.endsWith(":")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         		  if (trim.endsWith(":") && i < strings.length - 1) { //$NON-NLS-1$
         			  trim = strings[i].trim() + strings[i+1].trim();
@@ -115,21 +119,29 @@ public class WIDParser {
         					  currentWid.setEclipseCustomEditor(stringValue);
         				  }
         			  } else if (openBrackets == 3 && stringValue.trim().length() > 0) {
-            			  Object value = stringValue;
+        				  WorkItemDefinition.Parameter parameter = new WorkItemDefinition.Parameter();
         				  if (stringValue.startsWith("new") && stringValue.indexOf("(")>0) { //$NON-NLS-1$ //$NON-NLS-2$
         					  int index = stringValue.indexOf("("); //$NON-NLS-1$
         					  stringValue = stringValue.substring(3,index).trim();
         					  // look up the DataType in the registry and replace the DataType
         					  // name with its Java type equivalent name
-        					  DataTypeFactory dtf = DataTypeRegistry.getFactory(stringValue);
-        					  if (dtf!=null) {
-        						  value = dtf.createDataType();
-        					  }
+        					  String fqn = currentWid.findImport(stringValue);
+        					  if (fqn!=null)
+        						  parameter.type = fqn;
+        					  else
+        						  parameter.type = stringValue;
+        					  // the parameter's value (a drools-core DataType object) will be constructed
+        					  // at the time the WorkEditor is created. We can't do it here because we don't
+        					  // have access to the JavaProject in which the WorkEditor java class is defined.
+        				  }
+        				  else {
+        					  parameter.type = "java.lang.String";
+        					  parameter.value = stringValue;
         				  }
         				  if (current == Section.PARAMETERS)
-        					  currentWid.getParameters().put(name, value);
+        					  currentWid.getParameters().put(name, parameter);
         				  else if (current == Section.RESULTS)
-        					  currentWid.getResults().put(name, value);
+        					  currentWid.getResults().put(name, parameter);
         			  }
         		  }
         	  }

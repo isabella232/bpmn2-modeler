@@ -68,6 +68,7 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmSequenceFlowDe
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmTaskDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDLoader;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition.Parameter;
 import org.eclipse.bpmn2.modeler.ui.AbstractBpmn2RuntimeExtension.RootElementParser;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
 import org.eclipse.bpmn2.modeler.ui.wizards.FileService;
@@ -377,7 +378,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	private Property createIOSpecificationSection ( CustomTaskDescriptor ct, WorkItemDefinition wid ) {
 		Property ioSpecification = new Property (null,"ioSpecification", null); //$NON-NLS-1$
 		
-		for (Entry<String, Object> entry : wid.getParameters().entrySet()) {
+		for (Entry<String, Parameter> entry : wid.getParameters().entrySet()) {
 			Property dataInputs = new Property(ioSpecification,"dataInputs", null); //$NON-NLS-1$
 			Property dataInputsName = new Property(dataInputs,"name", null); //$NON-NLS-1$
 			dataInputsName.getValues().add(entry.getKey());
@@ -394,7 +395,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 //			dataOutputs.getValues().add(dataOutputsName);
 //			ioSpecification.getValues().add(dataOutputs);
 //		} else {
-			for (Entry<String, Object> entry : wid.getResults().entrySet()) {
+			for (Entry<String, Parameter> entry : wid.getResults().entrySet()) {
 				Property dataOutputs = new Property(ioSpecification,"dataOutputs", null); //$NON-NLS-1$
 				Property dataOutputsName = new Property(dataOutputs,"name", null); //$NON-NLS-1$
 				dataOutputsName.getValues().add(entry.getKey());

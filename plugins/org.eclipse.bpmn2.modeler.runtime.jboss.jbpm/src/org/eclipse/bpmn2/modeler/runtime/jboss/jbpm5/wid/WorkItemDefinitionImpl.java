@@ -11,9 +11,9 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-
-import org.eclipse.core.resources.IFile;
+import java.util.List;
 
 /**
  * @author bfitzpat
@@ -33,7 +33,8 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 				+ ", widResults=" + widResults //$NON-NLS-1$
 				+ "]"; //$NON-NLS-1$
 	}
-
+	
+	private List<String> imports = new ArrayList<String>();
 	private String widName;
 	private String widDisplayName;
 	private String widDescription;
@@ -41,8 +42,8 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	private String widIcon;
 	private String widCustomEditor;
 	private String widEclipseCustomEditor;
-	private LinkedHashMap<String, Object> widParameters;
-	private LinkedHashMap<String, Object> widResults;
+	private LinkedHashMap<String, Parameter> widParameters;
+	private LinkedHashMap<String, Parameter> widResults;
 	private File file;
 
 	@Override
@@ -71,9 +72,9 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	}
 
 	@Override
-	public LinkedHashMap<String, Object> getParameters() {
+	public LinkedHashMap<String, Parameter> getParameters() {
 		if (this.widParameters == null) 
-			this.widParameters = new LinkedHashMap<String, Object>();
+			this.widParameters = new LinkedHashMap<String, Parameter>();
 		return this.widParameters;
 	}
 	
@@ -118,7 +119,8 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 
 	@Override
 	public void setCustomEditor(String editor) {
-		this.widCustomEditor = editor;
+		if (editor!=null && !editor.isEmpty())
+			this.widCustomEditor = editor;
 	}
 
 	@Override
@@ -132,10 +134,34 @@ public class WorkItemDefinitionImpl implements WorkItemDefinition {
 	}
 
 	@Override
-	public LinkedHashMap<String, Object> getResults() {
+	public LinkedHashMap<String, Parameter> getResults() {
 		if (this.widResults == null) 
-			this.widResults = new LinkedHashMap<String, Object>();
+			this.widResults = new LinkedHashMap<String, Parameter>();
 		return this.widResults;
 	}
 
+	@Override
+	public List<String> getImports()
+	{
+		return imports;
+	}
+	
+	@Override
+	public void addImport(String fullyQualifiedClassName)
+	{
+		imports.add(fullyQualifiedClassName);
+	}
+
+	/**
+	 * Find the fully-qualified name for the given class name.
+	 */
+	@Override
+	public String findImport(String className)
+	{
+		for (String i : imports) {
+			if ( i.endsWith("."+className))
+				return i;
+		}
+		return null;
+	}
 }
