@@ -12,19 +12,14 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.runtime;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.ExtendedMetaData;
 
 /**
  * The abstract base class for Target Runtime Extension Descriptor classes.
@@ -75,7 +70,7 @@ public abstract class BaseRuntimeExtensionDescriptor implements IRuntimeExtensio
 	}
 
 	public void dispose() {
-		List<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
+		Collection<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
 		list.remove(this);
 	}
 
@@ -106,7 +101,7 @@ public abstract class BaseRuntimeExtensionDescriptor implements IRuntimeExtensio
 
 	public void setRuntime(TargetRuntime targetRuntime) {
 		this.targetRuntime = targetRuntime;
-		List<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
+		Collection<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
 		list.add(this);
 	}
 	

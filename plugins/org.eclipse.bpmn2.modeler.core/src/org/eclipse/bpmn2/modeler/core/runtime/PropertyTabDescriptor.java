@@ -12,6 +12,7 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.runtime;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
@@ -76,7 +77,7 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor implements IRun
 	}
 
 	public void dispose() {
-		List<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
+		Collection<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
 		list.remove(this);
 		// notify any open editors that property tabs have changed
 		PropertyChangeEvent event = new PropertyChangeEvent(this, Bpmn2Preferences.PREF_SHOW_ADVANCED_PROPERTIES, null, new Object());
@@ -91,7 +92,7 @@ public class PropertyTabDescriptor extends AbstractTabDescriptor implements IRun
 
 	public void setRuntime(TargetRuntime targetRuntime) {
 		this.targetRuntime = targetRuntime;
-		List<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
+		Collection<IRuntimeExtensionDescriptor> list = targetRuntime.getRuntimeExtensionDescriptors(getExtensionName());
 		list.add(this);
 	}
 

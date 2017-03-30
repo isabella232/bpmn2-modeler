@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -939,12 +940,12 @@ public class TargetRuntime extends BaseRuntimeExtensionDescriptor implements IRu
 		return d;
 	}
 	
-	public List<IRuntimeExtensionDescriptor> getRuntimeExtensionDescriptors(String name) {
-		List<IRuntimeExtensionDescriptor> result = new ArrayList<IRuntimeExtensionDescriptor>();
+	public Collection<IRuntimeExtensionDescriptor> getRuntimeExtensionDescriptors(String name) {
+		Collection<IRuntimeExtensionDescriptor> result = new ArrayList<IRuntimeExtensionDescriptor>();
 		try {
 			Class c = getClassForExtensionName(name);
 			Method m = TargetRuntime.class.getMethod("get"+c.getSimpleName()+"s"); //$NON-NLS-1$ //$NON-NLS-2$
-			result = (List<IRuntimeExtensionDescriptor>) m.invoke(this);
+			result = (Collection<IRuntimeExtensionDescriptor>) m.invoke(this);
 		}
 		catch (Exception ex) {
 			throw new TargetRuntimeConfigurationException(this, ex);

@@ -127,9 +127,12 @@ public class Bpmn2ToolBehaviorProvider extends DefaultToolBehaviorProvider imple
 			super("", null, null, null, null); //$NON-NLS-1$
 			TargetRuntime rt = editor.getTargetRuntime();
 			ModelEnablementDescriptor med = rt.getModelEnablements(profileId);
-			setLabel(med.getProfileName());
-			setId(profileId);
-			setDescription(med.getDescription());
+			if (med!=null) {
+				// guard against missing profiles
+				setLabel(med.getProfileName());
+				setId(profileId);
+				setDescription(med.getDescription());
+			}
 			this.editor = editor;
 		}
 		
