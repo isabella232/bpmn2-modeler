@@ -69,6 +69,7 @@ public class RootElementPropertiesAdapter<T extends RootElement> extends Extende
 		setObjectDescriptor(new RootElementObjectDescriptor<T>(this, object));
 	}
 	
+	@SuppressWarnings("hiding")
 	public class RootElementObjectDescriptor<T extends RootElement> extends ObjectDescriptor<T> {
 
 		public RootElementObjectDescriptor(ExtendedPropertiesAdapter<T> owner, T object) {
@@ -109,13 +110,21 @@ public class RootElementPropertiesAdapter<T extends RootElement> extends Extende
 			        		}
 			        	}
 					}
-					else if (rootElement instanceof Process) {
+					// If we are creating a process than 
+					// see issue #516607 
+					else if (rootElement instanceof Process  ) {
 						// The new object is a Process: if this is a Collaboration diagram
-						// make the new Process a Participant.
+						// we have to lookup for the Collaboration definition.
+						// If available, then we set the DefinitionalCollaborationRef for the new Process!
 						Process process = (Process) rootElement;
-						
+						// lookup for collaboration definition containers...
 						List<Collaboration> collaborations = ModelUtil.getAllRootElements(definitions, Collaboration.class);
 						for (Collaboration collaboration : collaborations) {
+							// take the first one
+							process.setDefinitionalCollaborationRef(collaboration);
+							break; 
+							// skip the next block - we don't want another participant... (see issue #516607)
+							/*
 							BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(collaboration);
 							if (bpmnDiagram!=null) {
 								bpmnDiagram.getPlane().setBpmnElement(process);
@@ -135,6 +144,7 @@ public class RootElementPropertiesAdapter<T extends RootElement> extends Extende
 					        	collaboration.getParticipants().add(defaultParticipant);
 			        			break;
 							}
+							*/
 						}
 					}
 					
