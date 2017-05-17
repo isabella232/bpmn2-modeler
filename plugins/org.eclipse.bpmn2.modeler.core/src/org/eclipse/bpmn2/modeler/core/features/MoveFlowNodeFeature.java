@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Bpmn2Factory;
+import org.eclipse.bpmn2.Choreography;
+import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
@@ -24,7 +25,9 @@ import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.SubProcess;
+import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.model.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
@@ -41,6 +44,7 @@ import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 
@@ -151,16 +155,42 @@ public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 		return getBusinessObjectForPictogramElement(context.getSourceContainer());
 	}
 
+	/**
+	 * This method is called during moving a element on the diagram to determine
+	 * if the element can be dropped into the target.
+	 * This is relevant for collaboration diagrams with pools and lanes. 
+	 * @param context
+	 * @return
+	 */
 	private Object getTargetBo(IMoveShapeContext context) {
 		if (context.getTargetContainer().equals(getDiagram())) {
+			BPMNDiagram bpmnDiagram = BusinessObjectUtil.getFirstElementOfType((Diagram) context.getTargetContainer(), BPMNDiagram.class);
+			if (bpmnDiagram != null) {
+				BaseElement be = bpmnDiagram.getPlane().getBpmnElement();
+				// issue #504045 (fin an existing processRef for collaboration diagram...)
+				if (be!=null && be instanceof Collaboration && (be instanceof Choreography == false)) {// explicit exclude Choreography for Choreography diagrams
+					// find an eligible Process for this FlowElement,
+					// one that is not referenced by a Pool
+					Collaboration collaboration = (Collaboration) be;
+					for (Participant participant : collaboration.getParticipants()) {
+						if (DIUtils.findBPMNShape(participant) == null) {
+							return participant.getProcessRef();
+						}
+					}
+					// no process found -> move not possible
+					return null;
+				}
+			}
+
 			Object target = modelHandler.getFlowElementContainer(context.getTargetContainer());
-			if (target==null) {
+			// removed, because of issue #504045
+			// if (target == null) { //returning a not attached (not contained by the model) object is bad 
 				// This handles the case where {@link #canMoveShape(IMoveShapeContext)} is called:
 				// at this point there is no write transaction open yet on the EditingDomain
-				// however,  if the target is the Diagram but no default Process exists yet
+				// however, if the target is the Diagram but no default Process exists yet
 				// for that Diagram, then the move should be conditionally allowed.
-				return Bpmn2Factory.eINSTANCE.createProcess();
-			}
+				// return Bpmn2Factory.eINSTANCE.createProcess();
+			// }
 			return target;
 		}
 		return getBusinessObjectForPictogramElement(context.getTargetContainer());
