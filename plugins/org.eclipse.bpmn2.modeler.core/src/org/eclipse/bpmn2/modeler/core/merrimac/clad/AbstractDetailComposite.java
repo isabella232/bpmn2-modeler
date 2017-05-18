@@ -307,8 +307,9 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 
 	    descriptionText.setFont(getDescriptionFont());
 		
-		descriptionText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-		descriptionText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+	    // issue 516847
+		descriptionText.setBackground(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+		descriptionText.setForeground(display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 		descriptionText.setData(AbstractObjectEditingDialog.DO_NOT_ADAPT , Boolean.TRUE);
 		
 		GridData d = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
