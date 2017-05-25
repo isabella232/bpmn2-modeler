@@ -96,20 +96,13 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 
 		Composite body = form.getBody();
 		body.setBackground(form.getBackground());
-
-		FormData data = new FormData();
-		data.top = new FormAttachment(0, 0);
-		data.bottom = new FormAttachment(100, 0);
-		data.left = new FormAttachment(0, 0);
-		data.right = new FormAttachment(100, 0);
-		body.setLayoutData(data);
 		body.setLayout(new FormLayout());
 		
 		dialogContent = createDialogContent(body);
 		if (compositeFactory!=null)
 			dialogContent.setData("factory", compositeFactory); //$NON-NLS-1$
 		
-		data = new FormData();
+		FormData data = new FormData();
 		data.top = new FormAttachment(0, 0);
 		data.bottom = new FormAttachment(100, 0);
 		data.left = new FormAttachment(0, 0);
