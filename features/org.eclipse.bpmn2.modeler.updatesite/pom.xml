@@ -29,10 +29,10 @@
 	<description>BPMN2 Modeler Update SiteFeature</description>
 
 	<properties>
-		<maven.antrun.plugin.version>1.3</maven.antrun.plugin.version>
+	  <maven.antrun.plugin.version>1.3</maven.antrun.plugin.version>
 	  <update.site.name>BPMN2 Modeler</update.site.name>
-	  <update.site.description>BPMN2 Modeler Release build for Eclipse Neon platform</update.site.description>
-	  <target.eclipse.version>4.6 (Neon)</target.eclipse.version>
+	  <update.site.description>BPMN2 Modeler Release build for Eclipse Oxygen platform</update.site.description>
+	  <target.eclipse.version>4.7 (Oxygen)</target.eclipse.version>
 	  <siteTemplateFolder>siteTemplateFolder</siteTemplateFolder>
 	</properties>
 
