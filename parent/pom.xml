@@ -8,7 +8,7 @@
 
 	<groupId>org.eclipse.bpmn2.modeler</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
-	<version>1.4.0-SNAPSHOT</version>
+	<version>1.4.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>BPMN2 Modeler Parent</name>
@@ -31,7 +31,7 @@
 	<properties>
 		<tycho-version>0.26.0</tycho-version>
 		<tycho-extras-version>${tycho-version}</tycho-extras-version>
-		<BUILD_ALIAS>Final</BUILD_ALIAS>
+		<BUILD_ALIAS>RC1</BUILD_ALIAS>
 		<BUILD_NUMBER>1</BUILD_NUMBER>
 		<eclipse.orbit.url>http://download.eclipse.org/tools/orbit/downloads/drops/repository</eclipse.orbit.url>
 	</properties>

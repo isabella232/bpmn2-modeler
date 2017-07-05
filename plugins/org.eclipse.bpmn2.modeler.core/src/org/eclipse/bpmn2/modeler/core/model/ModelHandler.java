@@ -768,44 +768,56 @@ public class ModelHandler {
 		return null;
 	}
 
+	/**
+	 * getFlowElementContainer - Return the flow-element container object of the specified object.
+	 * @param o
+	 * @return
+	 */
 	public FlowElementsContainer getFlowElementContainer(Object o) {
-		if (o == null) {
+		FlowElementsContainer fec = null;
+		
+		if (o == null)
 			return getOrCreateProcess(getInternalParticipant());
-		}
-		if (o instanceof Diagram) {
+
+		if (o instanceof Diagram)
 	        o = BusinessObjectUtil.getFirstElementOfType((Diagram)o, BPMNDiagram.class);
-		}
+
 		if (o instanceof BPMNDiagram) {
 			BPMNDiagram bpmnDiagram = (BPMNDiagram) o;
-			BaseElement be = bpmnDiagram.getPlane().getBpmnElement();
-			if (be != null && be instanceof FlowElementsContainer) {
-				return (FlowElementsContainer)be;
-			}
-			else if (be instanceof Collaboration) {
-				// find an eligible Process for this FlowElement,
-				// one that is not referenced by a Pool
-				Collaboration collaboration = (Collaboration) be;
+			BaseElement baseElement = bpmnDiagram.getPlane().getBpmnElement();
+			
+			if (baseElement != null && baseElement instanceof FlowElementsContainer) 
+				fec = (FlowElementsContainer)baseElement;
+
+			else if (baseElement instanceof Collaboration) {
+				
+				// Find an eligible Process for this FlowElement, one that is not referenced by a Pool
+				Collaboration collaboration = (Collaboration) baseElement;
 				for (Participant participant : collaboration.getParticipants()) {
 					if (DIUtils.findBPMNShape(participant)==null) {
-						return getOrCreateProcess(participant);
+						return (FlowElementsContainer)getOrCreateProcess(participant);
 					}
 				}
 				// create a default Participant.
 				Participant defaultParticipant = createObject(Participant.class);
 				defaultParticipant.setName(Messages.ModelHandler_Default_Pool);
-				return getOrCreateProcess(defaultParticipant);
+				fec = (FlowElementsContainer)getOrCreateProcess(defaultParticipant);
 			}
-			else if (be instanceof FlowElementsContainer) {
-				return (FlowElementsContainer) be;
-			}
+			else if (baseElement instanceof FlowElementsContainer) 
+				fec = (FlowElementsContainer) baseElement;
+
 		}
-		if (o instanceof Participant) {
-			return getOrCreateProcess((Participant) o);
-		}
-		if (o instanceof SubProcess) {
-			return (FlowElementsContainer) o;
-		}
-		return findElementOfType(FlowElementsContainer.class, o);
+		else if (o instanceof Participant) 
+			fec = (FlowElementsContainer)getOrCreateProcess((Participant) o);
+		else if (o instanceof SubProcess) 
+			fec = (FlowElementsContainer)o;
+		else
+		    fec = findElementOfType(FlowElementsContainer.class, o);
+		
+		if (fec == null)
+			fec = (FlowElementsContainer)getOrCreateProcess(getInternalParticipant());
+		
+		return fec;
 	}
 
 	public Participant getParticipant(final Object o) {
