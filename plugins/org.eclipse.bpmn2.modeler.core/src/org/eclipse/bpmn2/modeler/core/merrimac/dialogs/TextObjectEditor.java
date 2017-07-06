@@ -200,7 +200,7 @@ public class TextObjectEditor extends ObjectEditor {
 			if (!text.isDisposed()) {
 				String oldText = text.getText();
 				String newText = getText();
-				if (!newText.equals(oldText)) {
+				if (newText != null && !newText.equals(oldText)) {
 					int pos = text.getCaretPosition();
 					setText(newText);
 					text.setSelection(pos, pos);
@@ -230,20 +230,18 @@ public class TextObjectEditor extends ObjectEditor {
 	 * handles structureRef values (proxy URIs from a DynamicEObject)
 	 * and provides reasonable behavior for EObject values.
 	 *
-	 * @param value - new object value. If null is passed in, the implementation
-	 * should substitute the original value of the EObject's feature.
-	 *
 	 * @return string representation of the EObject feature's value.
 	 */
 	protected String getText() {
 		Object value = getBusinessObjectDelegate().getTextValue(object, feature);
-		if (multiLine && value instanceof String) {
+		
+		if (multiLine && value instanceof String)
 			value = toPlatformString((String) value);
-		}
-		if (canSetNull()) {
-			return value==null ? "" : value.toString(); //$NON-NLS-1$
-		}
-		return value==null ? null : value.toString();
+
+		if (value == null)
+			return canSetNull() ? null : ""; //$NON-NLS-1$
+
+		return value.toString();
 	}
 
 	@Override
