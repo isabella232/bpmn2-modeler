@@ -645,8 +645,8 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 	}
 
 	public void refresh() {
-//		Display.getDefault().asyncExec( new Runnable() {
-//			public void run() {
+		Display.getDefault().asyncExec( new Runnable() {
+			public void run() {
 				List<Control>kids = new ArrayList<Control>();
 				Composite parent = AbstractDetailComposite.this;
 				if (!parent.isDisposed()) {
@@ -673,8 +673,8 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 					catch (Exception e) {
 					}
 				}
-//			}
-//		});
+			}
+		});
 	}
 	
 	public void setPropertiesProvider(AbstractPropertiesProvider provider) {

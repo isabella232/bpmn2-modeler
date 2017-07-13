@@ -233,11 +233,17 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 			int i = preferenceStore.getInt("dialog."+eclass.getName()+".tab"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (i>=0 && i<folder.getItemCount())
 				folder.setSelection(i);
+
 			folder.addSelectionListener( new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					int i = folder.getSelectionIndex();
 					preferenceStore.setValue("dialog."+eclass.getName()+".tab", i); //$NON-NLS-1$ //$NON-NLS-2$
+					AbstractDetailComposite selectedDetail = details.get(i);
+
+					// This will trigger an update to the selected tab.
+					if (selectedDetail != null)
+						selectedDetail.setBusinessObject(businessObject);
 				}
 			});
 			
