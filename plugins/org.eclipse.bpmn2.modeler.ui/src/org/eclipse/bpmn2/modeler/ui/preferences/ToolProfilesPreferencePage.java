@@ -465,14 +465,16 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			cboProfiles.removeAll();
 			for (String profileName : preferences.getAllToolProfiles(currentRuntime)) {
 				ModelEnablementDescriptor med = currentRuntime.getModelEnablements(profileName);
-				String text = med.getProfileName();
-				if (text==null || text.isEmpty())
-					text = Messages.ToolProfilePreferencePage_Unnamed + (i+1);
-				cboProfiles.add(text);
-				cboProfiles.setData(text, med);
-				if (iSelected<0 && (currentProfileName!=null && currentProfileName.equals(profileName)))
-					cboProfiles.select(iSelected = i);
-				++i;
+				if (med != null) {
+					String text = med.getProfileName();
+					if (text==null || text.isEmpty())
+						text = Messages.ToolProfilePreferencePage_Unnamed + (i+1);
+					cboProfiles.add(text);
+					cboProfiles.setData(text, med);
+					if (iSelected<0 && (currentProfileName!=null && currentProfileName.equals(profileName)))
+						cboProfiles.select(iSelected = i);
+					++i;
+				}
 			}
 			if (btnDeleteProfile!=null)
 				btnDeleteProfile.setEnabled(cboProfiles.getItemCount()>0);
@@ -865,11 +867,13 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			int i=1;
 			for (String profileName : preferences.getAllToolProfiles(currentRuntime)) {
 				ModelEnablementDescriptor med = currentRuntime.getModelEnablements(profileName);
-				String text = med.getProfileName();
-				if (text==null || text.isEmpty())
-					text = Messages.ToolProfilePreferencePage_Unnamed + i++;
-				cboCopy.add(text);
-				cboCopy.setData(text, med);
+				if (med != null) {
+					String text = med.getProfileName();
+					if (text==null || text.isEmpty())
+						text = Messages.ToolProfilePreferencePage_Unnamed + i++;
+					cboCopy.add(text);
+					cboCopy.setData(text, med);
+				}
 			}
 			cboCopy.setEnabled(false);
 			
