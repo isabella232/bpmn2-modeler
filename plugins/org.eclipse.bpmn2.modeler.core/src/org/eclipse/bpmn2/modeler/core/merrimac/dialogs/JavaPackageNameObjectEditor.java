@@ -14,6 +14,7 @@
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
+import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
@@ -53,6 +54,7 @@ public class JavaPackageNameObjectEditor extends TextObjectEditor {
 
 		text = getToolkit().createText(composite, ""); //$NON-NLS-1$
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		text.setTextLimit(Bpmn2Preferences.getInstance(object).getTextLimit());
 		text.addVerifyListener(new VerifyListener() {
 
 			/**
