@@ -123,7 +123,13 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 
 	public String getText(Object element) {
 		if (element instanceof EObject) {
-			return ExtendedPropertiesProvider.getTextValue((EObject)element,feature);
+			String text = "";
+			if (headerText != null && headerText.equals("Name"))
+				text = ExtendedPropertiesProvider.getTextValue((EObject)element);
+			else
+				text = ExtendedPropertiesProvider.getTextValue((EObject)element, feature);
+
+			return text;
 		}
 		return element.toString();
 	}

@@ -39,7 +39,12 @@ public class MessagePropertiesAdapter extends RootElementPropertiesAdapter<Messa
     	setObjectDescriptor(new RootElementObjectDescriptor<Message>(this, object) {
 			@Override
 			public String getTextValue() {
-				String text = ChoreographyUtil.getMessageName(object);
+				Message message = (Message)object;
+				String text = message.getName();
+
+				if (text == null) 
+					text = message.getId();
+
 				return text;
 			}
     	});

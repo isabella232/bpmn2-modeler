@@ -73,7 +73,7 @@ public class JbpmDefinitionsPropertyComposite extends DefinitionsPropertyComposi
 
 	@Override
 	protected Composite bindFeature(EObject object, EStructuralFeature feature, EClass eItemClass) {
-		if ("imports".equals(feature.getName())) { //$NON-NLS-1$
+		if ((feature != null) && ("imports".equals(feature.getName()))) { //$NON-NLS-1$
 			if (object instanceof Definitions) {
 				Definitions definitions = (Definitions)object;
 				for (RootElement re : definitions.getRootElements()) {
