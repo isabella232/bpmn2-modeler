@@ -1814,6 +1814,9 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		catch (BackingStoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}		
+		catch (IllegalStateException e) {
+			// this node (or an ancestor) has been removed with removeNode()
 		}
 		return false;
 	}
