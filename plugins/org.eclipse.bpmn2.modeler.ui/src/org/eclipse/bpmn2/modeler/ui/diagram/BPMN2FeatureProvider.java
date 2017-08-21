@@ -208,6 +208,8 @@ import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.features.impl.Reason;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.platform.IDiagramBehavior;
 import org.eclipse.graphiti.services.Graphiti;
@@ -398,11 +400,23 @@ public class BPMN2FeatureProvider extends DefaultFeatureProvider implements IBpm
 	}
 	
 	private EObject getApplyObject(IContext context) {
-		if (context instanceof IAddContext) {
-			Object object = ((IAddContext) context).getNewObject();
+		
+		if (context instanceof IAddContext) {			
+			IAddContext aContext = (IAddContext)context;
+			int contextHeight = aContext.getHeight();
+			ContainerShape shape = aContext.getTargetContainer();
+			
+			// Increase the graphics algorithm size to always be at least as big as any added context.
+			if (shape != null) {
+				GraphicsAlgorithm ga = shape.getGraphicsAlgorithm();
+				if (ga != null && ga.getHeight() < contextHeight)
+					ga.setHeight(contextHeight);
+			}
+			Object object = aContext.getNewObject();
 			if (object instanceof EObject)
 				return (EObject)object;
-		} else if (context instanceof IPictogramElementContext) {
+		} 
+		else if (context instanceof IPictogramElementContext) {
 			return BusinessObjectUtil.getFirstElementOfType(
 					(((IPictogramElementContext) context).getPictogramElement()), EObject.class);
 		} else if (context instanceof IReconnectionContext) {
