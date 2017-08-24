@@ -12,11 +12,13 @@ package org.eclipse.bpmn2.modeler.ui.editor;
 
 import java.util.ArrayList;
 
+import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DefaultMarkerBehavior;
 import org.eclipse.graphiti.ui.editor.DefaultPersistencyBehavior;
 import org.eclipse.graphiti.ui.editor.DefaultUpdateBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
+import org.eclipse.graphiti.ui.editor.IDiagramContainerUI;
 import org.eclipse.swt.widgets.Control;
 
 public class DefaultBPMN2EditorDiagramBehavior extends DiagramBehavior {
@@ -58,11 +60,21 @@ public class DefaultBPMN2EditorDiagramBehavior extends DiagramBehavior {
 
 	@Override
 	protected void selectPictogramElements(PictogramElement[] pictogramElements) {
+		
 		// Avoid NPE when a final selection comes in from the Outline Viewer AFTER
 		// the editor is closed and the workbench is shutting down.
-		Control control = getDiagramContainer().getGraphicalViewer().getControl();
+		IDiagramContainerUI diagramContainer = getDiagramContainer();
+		if (diagramContainer == null)
+			return;
+		
+		GraphicalViewer gv = diagramContainer.getGraphicalViewer();
+		if (gv == null)
+			return;
+		
+		Control control = gv.getControl();
 		if (control==null || control.isDisposed())
 			return;
+		
 		super.selectPictogramElements(pictogramElements);
 	}
 }
