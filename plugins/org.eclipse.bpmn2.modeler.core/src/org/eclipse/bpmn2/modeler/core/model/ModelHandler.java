@@ -597,12 +597,19 @@ public class ModelHandler {
 	public Lane createLane(Object target) {
 		Lane lane = createObject(Lane.class);
 		FlowElementsContainer container = getFlowElementContainer(target);
-		if (container.getLaneSets().isEmpty()) {
+		if (container == null)
+			return null;
+		
+		List<LaneSet> laneSets = container.getLaneSets();
+		if (laneSets == null)
+			return null;
+		
+		if (laneSets.isEmpty()) {
 			LaneSet laneSet = createObject(LaneSet.class);
 			laneSet.setName(Messages.ModelHandler_Lane_Set+ModelUtil.getIDNumber( laneSet.getId() ));
-			container.getLaneSets().add(laneSet);
+			laneSets.add(laneSet);
 		}
-		container.getLaneSets().get(0).getLanes().add(lane);
+		laneSets.get(0).getLanes().add(lane);
 		return lane;
 	}
 
