@@ -1030,6 +1030,8 @@ public class DIUtils {
 
 	public static Diagram getDiagram(BaseElement baseElement) {
 		Resource res = ExtendedPropertiesAdapter.getResource(baseElement);
+		if (res == null)
+			return null;
 		List<PictogramElement> pes = getPictogramElements(res.getResourceSet(), baseElement);
 		if (pes.size()>0) {
 			return Graphiti.getPeService().getDiagramForPictogramElement(pes.get(0));
