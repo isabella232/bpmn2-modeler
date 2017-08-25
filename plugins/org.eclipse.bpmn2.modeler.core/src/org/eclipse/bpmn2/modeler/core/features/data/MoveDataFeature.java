@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.data;
 
+import java.util.List;
+
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.FlowElement;
@@ -85,10 +87,12 @@ public class MoveDataFeature extends DefaultMoveBPMNShapeFeature {
 		ContainerShape targetContainer = context.getTargetContainer();
 		if (sourceContainer!=targetContainer) {
 			EObject targetObject = FeatureSupport.getTargetObject(context);
-			if (dataObject instanceof FlowElement) {
+			if ((dataObject instanceof FlowElement) && (targetObject != null)) {
 				// The Item Aware data object is also a FlowElement, so it
 				// belongs in a FlowElementsContainer.
-				((FlowElementsContainer)targetObject).getFlowElements().add((FlowElement)dataObject);
+				List<FlowElement> flowElements = ((FlowElementsContainer)targetObject).getFlowElements();
+				if (flowElements != null)
+					flowElements.add((FlowElement)dataObject);
 			}
 			else {
 				// The data object must be either a DataInput or DataOutput,
