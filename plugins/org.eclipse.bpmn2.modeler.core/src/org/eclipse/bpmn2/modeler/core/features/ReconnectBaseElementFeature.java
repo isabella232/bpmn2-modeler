@@ -79,12 +79,11 @@ public class ReconnectBaseElementFeature extends DefaultReconnectionFeature {
 	 */
 	@Override
 	public void preReconnect(IReconnectionContext context) {
-		Connection connection = context.getConnection();
 		FixPointAnchor newAnchor = null;
 
 		if (!(context.getNewAnchor() instanceof FixPointAnchor)) {
-			AnchorContainer source = connection.getStart().getParent();
-			AnchorContainer target = connection.getEnd().getParent();
+			AnchorContainer source = null;
+			AnchorContainer target = null;
 			if (context.getReconnectType().equals(ReconnectionContext.RECONNECT_TARGET)) {
 				target = (AnchorContainer) context.getTargetPictogramElement();
 				ILocation targetLoc = context.getTargetLocation();
