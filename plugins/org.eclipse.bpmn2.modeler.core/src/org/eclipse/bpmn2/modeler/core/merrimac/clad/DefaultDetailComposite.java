@@ -141,7 +141,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 			property += propArray[i];
 		}
 		
-		if (!property.isEmpty()) {
+		if (feature != null && !property.isEmpty()) {
 			// determine new object - may be a list
 			if (eclass!=null) {
 				Object value = be.eGet(feature);

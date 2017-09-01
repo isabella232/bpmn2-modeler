@@ -62,18 +62,18 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 		
 		// No, we need build the list: get the Target Runtime <propertyTab> contributions
 		// and merge with the Default Runtime Tab Descriptors
-		List<PropertyTabDescriptor> desc = null;
+		List<PropertyTabDescriptor> tabDescriptors = null;
 		TargetRuntime rt = TargetRuntime.getRuntime(businessObject);
 		if (rt!=TargetRuntime.getDefaultRuntime()) {
-			desc = TargetRuntime.getDefaultRuntime().buildPropertyTabDescriptors();
-			desc.addAll(rt.buildPropertyTabDescriptors());
+			tabDescriptors = TargetRuntime.getDefaultRuntime().buildPropertyTabDescriptors();
+			tabDescriptors.addAll(rt.buildPropertyTabDescriptors());
 		}
 		else
-			desc = rt.buildPropertyTabDescriptors();
+			tabDescriptors = rt.buildPropertyTabDescriptors();
 		
 		// do tab replacement
 		ArrayList<PropertyTabDescriptor> replaced = new ArrayList<PropertyTabDescriptor>();
-		for (PropertyTabDescriptor d : desc) {
+		for (PropertyTabDescriptor d : tabDescriptors) {
 			String replacedId = d.getReplaceTab();
 			if (replacedId!=null) {
 				String[] replacements = replacedId.split(" "); //$NON-NLS-1$
@@ -89,9 +89,9 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 								PropertyTabDescriptor replacedTab = TargetRuntime.findPropertyTabDescriptor(id);
 								if (replacedTab!=null) {
 									replaced.add(replacedTab);
-									int i = desc.indexOf(replacedTab);
+									int i = tabDescriptors.indexOf(replacedTab);
 									if (i>=0) {
-										desc.set(i, d);
+										tabDescriptors.set(i, d);
 									}
 								}
 							}
@@ -101,48 +101,47 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 			}
 		}
 		if (replaced.size()>0)
-			desc.removeAll(replaced);
+			tabDescriptors.removeAll(replaced);
 
-		for (int i=desc.size()-1; i>=0; --i) {
-			PropertyTabDescriptor d = desc.get(i);
+		for (int i=tabDescriptors.size()-1; i>=0; --i) {
+			PropertyTabDescriptor d = tabDescriptors.get(i);
 			for (int j=i-1; j>=0; --j) {
-				if (desc.get(j)==d) {
-					desc.remove(i);
+				if (tabDescriptors.get(j)==d) {
+					tabDescriptors.remove(i);
 					break;
 				}
 			}
 		}
 		
-		// remove empty tabs
-		// also move the advanced tab to end of list
-		ArrayList<PropertyTabDescriptor> emptyTabs = new ArrayList<PropertyTabDescriptor>();
+		// Screen out tabs that don't apply to the selected component and move the advanced tab to end of list.
+		ArrayList<PropertyTabDescriptor> nonapplicableTabs = new ArrayList<PropertyTabDescriptor>();
 		PropertyTabDescriptor advancedPropertyTab = null;
-		for (PropertyTabDescriptor d : desc) {
+		for (PropertyTabDescriptor descriptor : tabDescriptors) {
 			boolean empty = true;
-			for (Bpmn2SectionDescriptor s : (List<Bpmn2SectionDescriptor>) d.getSectionDescriptors()) {
+			for (Bpmn2SectionDescriptor s : (List<Bpmn2SectionDescriptor>) descriptor.getSectionDescriptors()) {
 				if (s.appliesTo(part, selection)) {
 					empty = false;
 				}
 				if (s.getSectionClass() instanceof AdvancedPropertySection) {
-					advancedPropertyTab = d;
+					advancedPropertyTab = descriptor;
 				}
 			}
 			if (empty) {
-				emptyTabs.add(d);
+				nonapplicableTabs.add(descriptor);
 			}
 		}
 		
-		if (emptyTabs.size()>0)
-			desc.removeAll(emptyTabs);
+		if (nonapplicableTabs.size() > 0)
+			tabDescriptors.removeAll(nonapplicableTabs);
 		
 		if (advancedPropertyTab!=null) {
-			if (desc.remove(advancedPropertyTab))
-				desc.add(advancedPropertyTab);
+			if (tabDescriptors.remove(advancedPropertyTab))
+				tabDescriptors.add(advancedPropertyTab);
 		}
 		
 		// make copies of all tab descriptors to prevent cross-talk between editors
 		replaced.clear(); // we'll just reuse an ArrayList from before...
-		for (PropertyTabDescriptor td : desc) {
+		for (PropertyTabDescriptor td : tabDescriptors) {
 			// Note that the copy() makes the Tab Descriptor IDs and Section IDs unique.
 			// This is important because the TabbedPropertySheetPage uses these IDs to
 			// look up the Sections.

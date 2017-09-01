@@ -670,6 +670,7 @@
 			id="org.eclipse.bpmn2.modeler.dataitems.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.ui.property.diagrams.DataItemsPropertySection"
+			type="org.eclipse.bpmn2.Process org.eclipse.bpmn2.Definitions"
 			label="%propertyTab.label.DataItems">
 		</propertyTab>
 
