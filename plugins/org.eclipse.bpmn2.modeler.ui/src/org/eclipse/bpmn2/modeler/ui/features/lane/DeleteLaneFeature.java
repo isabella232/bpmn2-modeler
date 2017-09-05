@@ -25,6 +25,7 @@ import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.ResizeShapeContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 
@@ -52,7 +53,8 @@ public class DeleteLaneFeature extends AbstractDefaultDeleteFeature {
 		}
 		LaneSet laneSet = (LaneSet)lane.eContainer();
 		
-		if (parentContainerShape != null) {
+		// Don't resize if deleted lane feature is not part of another element.
+		if ((parentContainerShape != null) && !(parentContainerShape.getContainer() instanceof Diagram)) {
 			boolean before = false;
 			ContainerShape neighborContainerShape = getLaneAfter(laneContainerShape);
 			if (neighborContainerShape == null) {

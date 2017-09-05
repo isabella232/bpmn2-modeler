@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.bpmn2.modeler.examples"
       label="BPMN2 Modeler - Examples"
-      version="1.4.1.qualifier"
+      version="1.4.2.qualifier"
       provider-name="%providerName">
 
    <description>

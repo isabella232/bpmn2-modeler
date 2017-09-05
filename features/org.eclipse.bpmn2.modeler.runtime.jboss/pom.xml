@@ -14,13 +14,13 @@
 	<parent>
 		<groupId>org.eclipse.bpmn2.modeler.features</groupId>
 		<artifactId>org.eclipse.bpmn2.modeler.features.parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>1.4.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.eclipse.bpmn2.modeler.features</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.runtime.jboss</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>1.4.2-SNAPSHOT</version>
 	<packaging>eclipse-feature</packaging>
 	<name>BPMN2 Modeler Feature: jBPM Runtime</name>
 	<description>BPMN2 Modeler JBoss jBPM Runtime Feature</description>
