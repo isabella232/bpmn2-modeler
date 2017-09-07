@@ -93,9 +93,26 @@ public class CustomTaskDescriptor extends ModelExtensionDescriptor {
 		return propertyTabs;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public String getImageId(String icon, IconSize size) {
-		if (icon != null && icon.trim().length() > 0) {
-			String prefix = featureContainer.getClass().getPackage().getName();
+		
+		if (size != null && icon != null && icon.trim().length() > 0) {
+			
+			if (featureContainer == null) 
+				return null;
+			
+			Class fcClass = featureContainer.getClass();
+			if (fcClass == null)
+				return null;
+			
+			Package fcPkg = fcClass.getPackage();
+			if (fcPkg == null)
+				return null;
+			
+			String prefix = fcPkg.getName();
+			if (prefix == null)
+				return null;
+			
 			return prefix + "." + icon.trim() + "." + size.value; //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return null;
@@ -103,7 +120,7 @@ public class CustomTaskDescriptor extends ModelExtensionDescriptor {
 	
 	public String getImagePath(String icon, IconSize size) {
 		if (icon != null && icon.trim().length() > 0) {
-			String prefix = featureContainer.getClass().getPackage().getName();
+			//String prefix = featureContainer.getClass().getPackage().getName();
 			return CustomTaskImageProvider.ICONS_FOLDER + size.value + "/" + icon.trim(); //$NON-NLS-1$
 		}
 		return null;
