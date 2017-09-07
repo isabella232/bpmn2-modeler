@@ -358,6 +358,7 @@ public class DIUtils {
 		return bpmnStyle;
 	}
 	
+	@SuppressWarnings("unlikely-arg-type")
 	public static BPMNLabelStyle getOrCreateDILabelStyle(BaseElement element, ShapeStyle ss) {
 		BPMNLabelStyle bpmnStyle = null;
 		DiagramElement de = DIUtils.findDiagramElement(element);
@@ -383,7 +384,7 @@ public class DIUtils {
 		}		
 		return bpmnStyle;
 	}
-	
+	/* Not currently referenced
 	private static boolean compareDILabelStyle(BPMNLabelStyle ls1, BPMNLabelStyle ls2) {
 		if (ls1==null) {
 			if (ls2==null)
@@ -408,7 +409,7 @@ public class DIUtils {
 				f1.isIsStrikeThrough() == f2.isIsStrikeThrough() &&
 				f1.isIsUnderline() == f2.isIsUnderline();
 	}
-	
+	*/
 	public static DiagramElement findDiagramElement(List<BPMNDiagram> diagrams, BaseElement bpmnElement) {
 		for (BPMNDiagram d : diagrams) {
 			BPMNPlane plane = d.getPlane();
@@ -804,6 +805,10 @@ public class DIUtils {
 	}
 	
 	public static BPMNEdge findBPMNEdge(BPMNDiagram bpmnDiagram, EObject baseElement) {
+		
+		if (bpmnDiagram == null || bpmnDiagram.getPlane() == null)
+			return null;
+		
 		for (DiagramElement de : bpmnDiagram.getPlane().getPlaneElement()) {
 			if (de instanceof BPMNEdge) {
 				if (((BPMNEdge)de).getBpmnElement() == baseElement)
