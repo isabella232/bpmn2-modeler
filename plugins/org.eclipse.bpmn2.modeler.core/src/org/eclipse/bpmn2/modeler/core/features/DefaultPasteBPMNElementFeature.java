@@ -696,8 +696,8 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 			((SequenceFlow) newObject).setTargetRef((FlowNode) newTargetObject);
 		}
 		else if (newObject instanceof Association) {
-			((Association) newObject).setSourceRef((FlowNode) newSourceObject);
-			((Association) newObject).setTargetRef((FlowNode) newTargetObject);
+			((Association) newObject).setSourceRef(newSourceObject);
+			((Association) newObject).setTargetRef(newTargetObject);
 		}
 		else if (newObject instanceof MessageFlow) {
 			((MessageFlow) newObject).setSourceRef((InteractionNode) newSourceObject);
