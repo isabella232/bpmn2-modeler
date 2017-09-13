@@ -181,8 +181,11 @@ public class BoundaryEventPositionHelper {
 
 		BoundaryEvent event = BusinessObjectUtil.getFirstElementOfType(context.getShape(), BoundaryEvent.class);
 		GraphicsAlgorithm eventGa = context.getShape().getGraphicsAlgorithm();
-		ContainerShape activityContainer = (ContainerShape) BusinessObjectUtil.getFirstBaseElementFromDiagram(diagram,
-		        event.getAttachedToRef());
+		PictogramElement firstBaseElement = BusinessObjectUtil.getFirstBaseElementFromDiagram(diagram, event.getAttachedToRef());
+		if (firstBaseElement == null || !(firstBaseElement instanceof ContainerShape))
+			return false;
+		
+		ContainerShape activityContainer = (ContainerShape)firstBaseElement;
 		GraphicsAlgorithm activityGa = activityContainer.getGraphicsAlgorithm();
 		ILocation activityLoc = peService.getLocationRelativeToDiagram(activityContainer);
 
