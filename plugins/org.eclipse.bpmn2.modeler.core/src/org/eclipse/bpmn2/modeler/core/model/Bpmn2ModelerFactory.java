@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DocumentRoot;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
@@ -164,8 +165,8 @@ public class Bpmn2ModelerFactory extends Bpmn2FactoryImpl {
 		lock.unlock();
 	}
 
-	public static Bpmn2ModelerFactory getInstance() {
-		return (Bpmn2ModelerFactory) Bpmn2ModelerFactory.eINSTANCE;
+	public static Bpmn2Factory getInstance() {
+		return Bpmn2ModelerFactory.eINSTANCE;
 	}
 	
 	@Override

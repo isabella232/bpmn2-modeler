@@ -20,7 +20,6 @@ import org.eclipse.bpmn2.modeler.core.merrimac.Bpmn2PropertyPageRedrawHandler;
 import org.eclipse.bpmn2.modeler.core.merrimac.DefaultBusinessObjectDelegate;
 import org.eclipse.bpmn2.modeler.core.merrimac.IBusinessObjectDelegate;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
-import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
@@ -66,7 +65,7 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	public final static Bpmn2Package PACKAGE = Bpmn2Package.eINSTANCE;
 	@Deprecated
 	// use createModelObject() instead
-	public final static Bpmn2ModelerFactory FACTORY = Bpmn2ModelerFactory.getInstance();
+	//public final static Bpmn2Factory FACTORY = Bpmn2ModelerFactory.getInstance();
 	protected AbstractBpmn2PropertySection propertySection;
 	protected FormToolkit toolkit;
 	protected IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -243,7 +242,6 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	 * @param clazz
 	 * @return
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected <T extends EObject> T createModelObject(Class clazz) {
 		T object = getBusinessObjectDelegate().createObject(clazz);
 		return object;
