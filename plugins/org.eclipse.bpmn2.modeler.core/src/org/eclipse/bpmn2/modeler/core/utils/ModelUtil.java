@@ -359,7 +359,7 @@ public class ModelUtil {
 	
 	public static String generateUndefinedID(String base) {
 		String name = "undefined"; //$NON-NLS-1$
-		if (base.contains("_")) { //$NON-NLS-1$
+		if (base != null && base.contains("_")) { //$NON-NLS-1$
 			return "<" + name + "_" + base.replaceFirst(".*_", "") + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		}
 		
@@ -873,7 +873,7 @@ public class ModelUtil {
 		if (object!=null) {
 			ancestor = getContainer(object);
 			while (ancestor!=null) {
-				Class type = ancestor.getClass();
+				Class<? extends EObject> type = ancestor.getClass();
 				for (Class t : types) {
 					if (t.isAssignableFrom(type))
 						return ancestor;
@@ -932,7 +932,6 @@ public class ModelUtil {
 	/*
 	 * Various model object and feature UI property methods
 	 */
-	@SuppressWarnings("rawtypes")
 	public static String getLabel(Object object) {
 		String label = ""; //$NON-NLS-1$
 		if (object instanceof EObject) {
@@ -944,7 +943,6 @@ public class ModelUtil {
 		return label;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public static String getTextValue(Object object) {
 		if (object instanceof EObject) {
 			try {
@@ -969,14 +967,12 @@ public class ModelUtil {
 	}
 
 	public static void disposeChildWidgets(Composite parent) {
-		int i = 0;
 		Control[] kids = parent.getChildren();
 		for (Control k : kids) {
 			if (k instanceof Composite) {
 				disposeChildWidgets((Composite)k);
 			}
 			k.dispose();
-			++i;
 		}
 		kids = parent.getChildren();
 	}
@@ -1113,6 +1109,7 @@ public class ModelUtil {
 		return false;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static <T extends Adapter> T getAdapter(EObject object, Class<T> clazz) {
 		for (Adapter a : object.eAdapters()) {
 			if (clazz.isInstance(a))
@@ -1251,7 +1248,9 @@ public class ModelUtil {
 	
 			// Compare generic objects
 			if (object1 instanceof Map && object2 instanceof Map) {
+				@SuppressWarnings("rawtypes")
 				Map m1 = (Map) object1;
+				@SuppressWarnings("rawtypes")
 				Map m2 = (Map) object2;
 				if (m1.size()!=m2.size())
 					return false;
@@ -1262,7 +1261,9 @@ public class ModelUtil {
 				return true;
 			}
 			if (object1 instanceof List && object2 instanceof List) {
+				@SuppressWarnings("rawtypes")
 				List l1 = (List) object1;
+				@SuppressWarnings("rawtypes")
 				List l2 = (List) object2;
 				if (l1.size()!=l2.size())
 					return false;
@@ -1274,7 +1275,7 @@ public class ModelUtil {
 			}
 			if (object1 instanceof String && object2 instanceof String)
 				return object1.equals(object2);
-	//		System.out.println("compare: \n  "+object1+"\n  "+object2);
+
 			return object1.equals(object2);
 		}
 	
