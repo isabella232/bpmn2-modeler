@@ -21,9 +21,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>org.eclipse.bpmn2.modeler.plugins</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.core</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	<name>BPMN2 Modeler Plugins: Core</name>
 	<description>Common Core functionality for BPMN2 Modeler</description>

@@ -21,9 +21,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>org.eclipse.bpmn2.modeler.features</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.updatesite</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>eclipse-repository</packaging>
 	<name>BPMN2 Modeler Feature: Update Site</name>
 	<description>BPMN2 Modeler Update SiteFeature</description>
@@ -71,7 +69,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>${maven.antrun.plugin.version}</version>
+				<version>${maven.antrun.plugin.version}</version><!--$NO-MVN-MAN-VER$-->
 				<executions>
 					<execution>
 						<id>install</id>

@@ -21,9 +21,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>org.eclipse.bpmn2.modeler.plugins</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.ui</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	<name>BPMN2 Modeler Plugins: UI</name>
 	<description>Main UI for BPMN2 Modeler</description>

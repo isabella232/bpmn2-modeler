@@ -21,9 +21,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>org.eclipse.bpmn2.modeler.examples.plugins</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.examples.modelreader</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	<name>BPMN2 Modeler Example Plug-in: Java Model Loader</name>
 	<description>BPMN2 Model Loader in Java</description>

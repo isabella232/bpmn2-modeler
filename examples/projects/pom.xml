@@ -25,6 +25,5 @@
 	<artifactId>org.eclipse.bpmn2.modeler.examples.projects.modelreader</artifactId>
 	<name>BPMN2 Modeler Examples: Projects</name>
 	<description>BPMN2 Modeler Example Projects</description>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 </project>

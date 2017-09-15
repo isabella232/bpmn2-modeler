@@ -25,7 +25,6 @@
 	<artifactId>org.eclipse.bpmn2.modeler.examples.plugins.parent</artifactId>
 	<name>BPMN2 Modeler Examples: Plugins Parent</name>
 	<description>BPMN2 Modeler Example Plug-ins</description>
-	<version>1.4.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>

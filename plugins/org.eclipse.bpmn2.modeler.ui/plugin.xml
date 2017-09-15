@@ -67,17 +67,17 @@
             name="%PREFERENCE_PAGE_EDITOR"/>
 
 	      <page
-	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            category="org.eclipse.bpmn2.modeler.Editor"
 	            class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorAppearancePreferencePage"
 	            id="org.eclipse.bpmn2.modeler.Appearance"
 	            name="%PREFERENCE_PAGE_APPEARANCE"/>
 	      <page
-	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            category="org.eclipse.bpmn2.modeler.Editor"
 	            class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorBehaviorPreferencePage"
 	            id="org.eclipse.bpmn2.modeler.Behavior"
 	            name="%PREFERENCE_PAGE_BEHAVIOR"/>
 	      <page
-	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            category="org.eclipse.bpmn2.modeler.Editor"
 	            class="org.eclipse.bpmn2.modeler.ui.preferences.ToolProfilesPreferencePage"
 	            id="org.eclipse.bpmn2.modeler.Profiles"
 	            name="%PREFERENCE_PAGE_PROFILES"/>
