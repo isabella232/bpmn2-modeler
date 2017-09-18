@@ -470,6 +470,9 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		EStructuralFeature feature = newObject.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature != null) {
 			oldId = (String) newObject.eGet(feature);
+			if (oldId == null)
+				return  "";  // can't set a hash entry without a key
+			
 			if (idMap.contains(oldId)) {
 				newId = idMap.get(oldId);
 				newObject.eSet(feature, newId);
