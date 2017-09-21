@@ -84,7 +84,8 @@ public class ReconnectBaseElementFeature extends DefaultReconnectionFeature {
 		if (!(context.getNewAnchor() instanceof FixPointAnchor)) {
 			AnchorContainer source = null;
 			AnchorContainer target = null;
-			if (context.getReconnectType().equals(ReconnectionContext.RECONNECT_TARGET)) {
+			String contextReconnectType = context.getReconnectType();
+			if (contextReconnectType != null && contextReconnectType.equals(ReconnectionContext.RECONNECT_TARGET)) {
 				target = (AnchorContainer) context.getTargetPictogramElement();
 				ILocation targetLoc = context.getTargetLocation();
 				newAnchor = AnchorUtil.createAnchor(target, targetLoc.getX(), targetLoc.getY());
