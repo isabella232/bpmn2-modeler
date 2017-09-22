@@ -464,6 +464,9 @@ public class JbpmModelUtil {
 		String id = be.getId();
 		for (ElementParameters ep : scenario.getElementParameters()) {
 			
+			if (ep == null)
+				break;
+			
 			if (id.equals(ep.getElementRef())) {
 				elementParams = ep;
 				break;
