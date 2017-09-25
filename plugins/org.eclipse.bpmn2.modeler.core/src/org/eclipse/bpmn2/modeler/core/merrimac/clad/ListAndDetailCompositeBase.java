@@ -117,8 +117,12 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	}
 	
 	protected void addDomainListener() {
-		if (editingDomain==null) {
-			editingDomain = (TransactionalEditingDomainImpl)getDiagramEditor().getEditingDomain();
+		if (editingDomain == null) {
+			if (diagramEditor == null) {
+				if ((diagramEditor = getDiagramEditor()) == null)
+					return;
+			}
+			editingDomain = (TransactionalEditingDomainImpl)diagramEditor.getEditingDomain();
 			editingDomain.addResourceSetListener(this);
 		}
 	}
