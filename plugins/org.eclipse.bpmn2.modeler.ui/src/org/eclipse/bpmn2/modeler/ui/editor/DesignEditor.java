@@ -330,6 +330,8 @@ public class DesignEditor extends BPMN2Editor {
 	}
 	
 	public void updateTabs() {
+		if (tabFolder.isDisposed())
+			return;
 //		if (!tabFolder.isLayoutDeferred()) {
 			if (tabFolder.getItemCount()==1) {
 				tabFolder.setTabHeight(0);
