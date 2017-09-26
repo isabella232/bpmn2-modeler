@@ -111,13 +111,20 @@ public class DefaultConnectionRouter extends AbstractConnectionRouter {
 	 */
 	@Override
 	public boolean canRoute(Connection connection) {
+		
+		Anchor startAnchor = connection.getStart();
+		if (startAnchor == null)
+			return false;
+		
 		// don't touch Choreography Task Message Links.
-		AnchorContainer ac = AnchorUtil.getAnchorContainer(connection.getStart());
+		AnchorContainer ac = AnchorUtil.getAnchorContainer(startAnchor);
 		if (AnchorType.getType(ac) == AnchorType.MESSAGELINK)
 			return false;
+		
 		ac = AnchorUtil.getAnchorContainer(connection.getEnd());
 		if (AnchorType.getType(ac) == AnchorType.MESSAGELINK)
 			return false;
+		
 		return true;
 	}
 
@@ -422,7 +429,7 @@ public class DefaultConnectionRouter extends AbstractConnectionRouter {
 			DeleteRoutingConnectionFeature deleteFeature = new DeleteRoutingConnectionFeature(fp);
 			deleteFeature.delete();
 
-			Diagram diagram = peService.getDiagramForPictogramElement(connection);
+//			Diagram diagram = peService.getDiagramForPictogramElement(connection);
 			for (int i=0; i<allRoutes.size(); ++i) {
 				ConnectionRoute r = allRoutes.get(i);
 //				Anchor sa = AnchorUtil.createFixedAnchor(source, r.get(0));
