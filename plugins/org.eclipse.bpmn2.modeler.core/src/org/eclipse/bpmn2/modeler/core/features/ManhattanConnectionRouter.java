@@ -521,7 +521,11 @@ public class ManhattanConnectionRouter extends BendpointConnectionRouter {
 			List<Point> departure = calculateDeparture(sourceSite, start, end);
 			List<Point> approach = calculateApproach(targetSite, start, end);
 			route.getPoints().addAll(departure);
-			start = departure.get(departure.size()-1);
+			int departureSize = departure.size();
+			if (departureSize > 0)
+				start = departure.get(departureSize-1);
+			else
+				start = departure.get(0);
 			end = approach.get(0);
 			calculateEnroute(route, start, end);
 			route.getPoints().addAll(approach);
