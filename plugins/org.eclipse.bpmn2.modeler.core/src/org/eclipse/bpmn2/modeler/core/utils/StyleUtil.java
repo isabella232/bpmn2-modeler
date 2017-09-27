@@ -35,7 +35,6 @@ import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
-import org.eclipse.graphiti.services.IPeService;
 import org.eclipse.graphiti.util.ColorConstant;
 import org.eclipse.graphiti.util.IColorConstant;
 import org.eclipse.graphiti.util.IGradientType;
@@ -46,7 +45,6 @@ public class StyleUtil {
 	private static final String CLASS_ID = "E-CLASS"; //$NON-NLS-1$
 	private static final String FILL_STYLE = "fill.style"; //$NON-NLS-1$
 	private static final IGaService gaService = Graphiti.getGaService();
-	private static final IPeService peService = Graphiti.getPeService();
 	
 	public enum FillStyle {
 		FILL_STYLE_NONE,
@@ -83,6 +81,8 @@ public class StyleUtil {
 	}
 
 	public static Diagram findDiagram(GraphicsAlgorithm ga) {
+		if (ga == null)
+			return null;
 		EObject container = ga.eContainer();
 		while (container!=null && !(container instanceof Diagram)) {
 			container = container.eContainer();
@@ -113,7 +113,7 @@ public class StyleUtil {
 	}
 	
 	public static void applyStyle(GraphicsAlgorithm ga, BaseElement be, ShapeStyle ss) {
-		if (be!=null) {
+		if (ga != null && be != null) {
 			Diagram diagram = findDiagram(ga);
 
 			if (ss==null) {
