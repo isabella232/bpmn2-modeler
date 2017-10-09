@@ -858,7 +858,7 @@ public class DefaultBPMN2Editor extends DiagramEditor implements IPreferenceChan
 			part = BPMN2DiagramCreator.openEditor(input);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			Activator.logError(e);
 		}
 
 		return part;
@@ -876,7 +876,7 @@ public class DefaultBPMN2Editor extends DiagramEditor implements IPreferenceChan
 	 * helper class used to handle setInput() of the editor, because of it's complexity split it up in own class,
 	 * which may be overridden and customized
 	 *
-	 * @author Flavio Donzé
+	 * @author Flavio Donz
 	 *
 	 */
 	public class EditorInputHelper {

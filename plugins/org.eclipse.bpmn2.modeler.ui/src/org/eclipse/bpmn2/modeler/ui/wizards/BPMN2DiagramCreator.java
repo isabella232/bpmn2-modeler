@@ -53,6 +53,9 @@ public class BPMN2DiagramCreator {
 		String modelName = modelUri.trimFragment().trimFileExtension().lastSegment();
 		// We still need to create a Diagram object for this editor
 		final Diagram diagram = DIUtils.createDiagram(modelName); //$NON-NLS-1$
+		
+		if (diagram == null)
+			return null;
 
 		if (otherEditor!=null) {
 			// reuse the temp Diagram File from other editor

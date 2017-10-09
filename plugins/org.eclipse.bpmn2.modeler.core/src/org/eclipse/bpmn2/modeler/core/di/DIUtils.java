@@ -458,30 +458,34 @@ public class DIUtils {
 				editor.getEditingDomain().getResourceSet().getResources().get(0);
 
 		final Diagram newDiagram = createDiagram(bpmnDiagram.getName());
-		final IFeatureProvider featureProvider = dtp.getFeatureProvider();
-		TransactionalEditingDomain domain = editor.getEditingDomain();
-		domain.getCommandStack().execute(new RecordingCommand(domain) {
-			protected void doExecute() {
-				resource.getContents().add(newDiagram);
-				newDiagram.setActive(true);
-				featureProvider.link(newDiagram, bpmnDiagram);
-			}
-		});
+		if (newDiagram != null) {
+			final IFeatureProvider featureProvider = dtp.getFeatureProvider();
+			TransactionalEditingDomain domain = editor.getEditingDomain();
+			domain.getCommandStack().execute(new RecordingCommand(domain) {
+				protected void doExecute() {
+					resource.getContents().add(newDiagram);
+					newDiagram.setActive(true);
+					featureProvider.link(newDiagram, bpmnDiagram);
+				}
+			});
+		}
 		return newDiagram;
 	}
 	
 	public static Diagram createDiagram(String diagramName) {
 		final Diagram diagram = Graphiti.getPeCreateService().createDiagram("BPMN2", diagramName, true); //$NON-NLS-1$
-		Bpmn2Preferences prefs = Bpmn2Preferences.getInstance();
-		ShapeStyle ss = prefs.getShapeStyle(ShapeStyle.Category.GRID);
-		diagram.setGridUnit(ss.getDefaultWidth());
-		diagram.setVerticalGridUnit(ss.getDefaultHeight());
-		diagram.setSnapToGrid(ss.getSnapToGrid());
-		GraphicsAlgorithm ga = diagram.getGraphicsAlgorithm();
-		IGaService gaService = Graphiti.getGaService();
-		ga.setForeground(gaService.manageColor(diagram, ss.getShapeForeground()));
-		ss = prefs.getShapeStyle(ShapeStyle.Category.CANVAS);
-		ga.setBackground(gaService.manageColor(diagram, ss.getShapeBackground()));
+		if (diagram != null) {
+			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance();
+			ShapeStyle ss = prefs.getShapeStyle(ShapeStyle.Category.GRID);
+			diagram.setGridUnit(ss.getDefaultWidth());
+			diagram.setVerticalGridUnit(ss.getDefaultHeight());
+			diagram.setSnapToGrid(ss.getSnapToGrid());
+			GraphicsAlgorithm ga = diagram.getGraphicsAlgorithm();
+			IGaService gaService = Graphiti.getGaService();
+			ga.setForeground(gaService.manageColor(diagram, ss.getShapeForeground()));
+			ss = prefs.getShapeStyle(ShapeStyle.Category.CANVAS);
+			ga.setBackground(gaService.manageColor(diagram, ss.getShapeBackground()));
+		}
 		return diagram;
 	}
 	
