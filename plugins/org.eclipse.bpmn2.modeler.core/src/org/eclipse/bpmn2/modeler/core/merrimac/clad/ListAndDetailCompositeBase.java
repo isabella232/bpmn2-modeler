@@ -173,6 +173,11 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	
 	@Override
 	public void setVisible(boolean visible) {
+		
+		// No need if already disposed.
+		if (isDisposed ()) 
+			return;
+		
 		if (getLayoutData() instanceof GridData) {
 			((GridData)getLayoutData()).exclude = !visible;
 		}
