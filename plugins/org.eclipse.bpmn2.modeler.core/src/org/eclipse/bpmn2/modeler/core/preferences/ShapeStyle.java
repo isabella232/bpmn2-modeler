@@ -417,7 +417,7 @@ public class ShapeStyle extends BaseRuntimeExtensionDescriptor {
 	}
 	
 	public int getDefaultWidth() {
-		if (defaultWidth<=0) {
+		if (defaultWidth<0) {
 			if (object.toLowerCase().contains("gateway")) //$NON-NLS-1$
 				return 50;
 			if (object.toLowerCase().contains("event")) //$NON-NLS-1$
@@ -431,15 +431,15 @@ public class ShapeStyle extends BaseRuntimeExtensionDescriptor {
 		return defaultWidth;
 	}
 
-	public void setDefaultWidth(int defaultWidth) {
-		if (this.defaultWidth!=defaultWidth) {
-			this.defaultWidth = defaultWidth;
+	public void setDefaultWidth(int newWidth) {
+		if (this.defaultWidth != newWidth) {
+			this.defaultWidth = newWidth;
 			changeMask |= SS_DEFAULT_WIDTH;
 		}
 	}
 	
 	public int getDefaultHeight() {
-		if (defaultHeight<=0) {
+		if (defaultHeight<0) {
 			if (object.toLowerCase().contains("gateway")) //$NON-NLS-1$
 				return 50;
 			if (object.toLowerCase().contains("event")) //$NON-NLS-1$

@@ -650,6 +650,7 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 		catch(Exception e) {
 		}
 		super.performDefaults();
+		Display.getDefault().update();
 	}
 
 	@Override
@@ -1070,14 +1071,16 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 
 		@Override
 		public Integer getValue() {
-			if (text!=null) {
-				return Integer.parseInt(text.getText());
+			if (text != null) {
+				String textVal = text.getText();
+				if (!textVal.isEmpty())
+					return Integer.parseInt(textVal);
 			}
 			return -1;
 		}
 
 		public void setValue(int value) {
-			if (text!=null) {
+			if (text != null) {
 				text.setText(Integer.toString(value, 10));
 			}
 		}

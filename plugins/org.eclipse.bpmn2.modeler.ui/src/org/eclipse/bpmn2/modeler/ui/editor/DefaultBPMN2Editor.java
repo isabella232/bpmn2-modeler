@@ -831,6 +831,7 @@ public class DefaultBPMN2Editor extends DiagramEditor implements IPreferenceChan
 					ga.setForeground(gaService.manageColor(diagram, ss.getShapeForeground()));
 					refresh();
 					getGraphicalControl().redraw();
+					getGraphicalControl().getDisplay().update();
 				}
 			});
 		}
