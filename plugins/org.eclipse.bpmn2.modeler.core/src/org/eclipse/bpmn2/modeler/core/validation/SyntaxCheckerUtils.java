@@ -220,11 +220,14 @@ public class SyntaxCheckerUtils {
 		int brackets = 0;
 		int parts = 0;
 		char last = 0;
+		Boolean bracketSeen = false;
 		for (char c : name.toCharArray()) {
 			if (c==' ') {
 				if (!part.isEmpty()) {
-					if (!isJavaPackageName(part))
+					if ((!isJavaPackageName(part)) || !(bracketSeen)) {
+						invalidChar = c;
 						return false;
+					}
 					++parts;
 					part = ""; //$NON-NLS-1$
 				}
@@ -232,7 +235,9 @@ public class SyntaxCheckerUtils {
 			}
 			if (c=='<') {
 				++brackets;
+				bracketSeen = true;
 				if (last!='<' && last!=',' && !isJavaPackageName(part)) {
+					invalidChar = c;
 					return false;
 				}
 				part = ""; //$NON-NLS-1$
@@ -245,6 +250,7 @@ public class SyntaxCheckerUtils {
 					return false;
 				}
 				if (last!='>' && !isJavaPackageName(part)) {
+					invalidChar = c;
 					return false;
 				}
 				part = ""; //$NON-NLS-1$
