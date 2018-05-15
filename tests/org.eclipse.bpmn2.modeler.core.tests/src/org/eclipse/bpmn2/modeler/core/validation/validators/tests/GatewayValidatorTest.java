@@ -73,8 +73,8 @@ public class GatewayValidatorTest {
 		twoFlows.add(flowTwo);
 		twoFlows.add(flowThree);
 		
-		when(eClass.getEStructuralFeature(anyString())).thenReturn(eFeature);
-		when(gateway.eClass()).thenReturn(eClass);
+		//when(eClass.getEStructuralFeature(anyString())).thenReturn(eFeature);
+		//when(gateway.eClass()).thenReturn(eClass);
 		
 	}
 

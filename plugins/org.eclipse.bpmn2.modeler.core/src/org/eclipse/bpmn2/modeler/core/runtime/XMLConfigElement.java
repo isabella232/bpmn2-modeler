@@ -190,6 +190,11 @@ public class XMLConfigElement implements IConfigurationElement {
 	public boolean isValid() {
 		return valid;
 	}
+    
+	@Override
+	public int getHandleId() {
+		return 0;
+	}
 
 	public static class XMLExtension implements IExtension {
 
