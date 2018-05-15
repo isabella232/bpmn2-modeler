@@ -271,7 +271,7 @@
 
 		<repository>
 			<id>eclipse-bpmn2</id>
-			<url>http://download.eclipse.org/modeling/mdt/bpmn2/updates/oxygen/1.4.0/</url>
+			<url>http://download.eclipse.org/modeling/mdt/bpmn2/updates/photon/1.5.0/</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>
