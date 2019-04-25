@@ -3,14 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Localization: plugin
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.bpmn2.modeler.core;singleton:=true
-Bundle-Version: 1.6.0.qualifier
+Bundle-Version: 1.5.1.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.core.Activator
 Bundle-Vendor: %providerName
 Require-Bundle: org.eclipse.emf.transaction,
  org.eclipse.emf.edit.ui,
  org.eclipse.osgi,
- org.eclipse.graphiti;bundle-version="[0.14.0,0.16.0)",
- org.eclipse.graphiti.ui;bundle-version="[0.14.0,0.16.0)",
+ org.eclipse.graphiti;bundle-version="[0.14.0,0.17.0)",
+ org.eclipse.graphiti.ui;bundle-version="[0.14.0,0.17.0)",
  org.eclipse.gef,
  org.eclipse.bpmn2.edit,
  org.eclipse.bpmn2.editor,
