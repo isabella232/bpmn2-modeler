@@ -26,7 +26,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.validation.IValidationContext;
 
 /**
- *
+ * This class is responsible to validate the gateway direction 
+ * for the different gateway types. The Gateway type relates to 
+ * the number of incoming and outgoing sequence flows. 
+ * <ul>
+ * <li>Converging gateways MUST have multiple incoming, and zero or one outgoing connection</li>
+ * <li>Diverging gateways MUST have zero or one incoming, and multiple outgoing connections</li>
+ * <li>Mixed gateways MUST have multiple incoming, and multiple outgoing connections</li>
+ * <li>Unspecified gateways MUST have either multiple incoming, or multiple outgoing connections</li>
+ * </ul>
+ * 
  */
 public class GatewayValidator extends AbstractBpmn2ElementValidator<Gateway> {
 
@@ -107,38 +116,41 @@ public class GatewayValidator extends AbstractBpmn2ElementValidator<Gateway> {
 			}
 		}
 		
-		if (object instanceof ExclusiveGateway) {
-			if (direction != GatewayDirection.DIVERGING
-					&& direction != GatewayDirection.CONVERGING) {
-				addStatus(object, "gatewayDirection", //$NON-NLS-1$
-						Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Exclusive_Converging_Diverging);
+		// validate direction type (skip for mixed gateway type)
+		if (direction != GatewayDirection.MIXED) {
+			if (object instanceof ExclusiveGateway) {
+				if (direction != GatewayDirection.DIVERGING
+						&& direction != GatewayDirection.CONVERGING) {
+					addStatus(object, "gatewayDirection", //$NON-NLS-1$
+							Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Exclusive_Converging_Diverging);
+				}
 			}
-		}
-		if (object instanceof EventBasedGateway) {
-			if (direction != GatewayDirection.DIVERGING) {
-				addStatus(object,"gatewayDirection", //$NON-NLS-1$
-						Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Event_Diverging);
+			if (object instanceof EventBasedGateway) {
+				if (direction != GatewayDirection.DIVERGING) {
+					addStatus(object,"gatewayDirection", //$NON-NLS-1$
+							Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Event_Diverging);
+				}
 			}
-		}
-		if (object instanceof ParallelGateway) {
-			if (direction != GatewayDirection.DIVERGING
-					&& direction != GatewayDirection.CONVERGING) {
-				addStatus(object,"gatewayDirection", //$NON-NLS-1$
-						Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Parallel_Converging_Diverging);
+			if (object instanceof ParallelGateway) {
+				if (direction != GatewayDirection.DIVERGING
+						&& direction != GatewayDirection.CONVERGING) {
+					addStatus(object,"gatewayDirection", //$NON-NLS-1$
+							Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Parallel_Converging_Diverging);
+				}
 			}
-		}
-		if (object instanceof InclusiveGateway) {
-			if (direction != GatewayDirection.DIVERGING
-					&& direction != GatewayDirection.CONVERGING) {
-				addStatus(object,"gatewayDirection", //$NON-NLS-1$
-						Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Inclusive_Converging_Diverging);
+			if (object instanceof InclusiveGateway) {
+				if (direction != GatewayDirection.DIVERGING
+						&& direction != GatewayDirection.CONVERGING) {
+					addStatus(object,"gatewayDirection", //$NON-NLS-1$
+							Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Inclusive_Converging_Diverging);
+				}
 			}
-		}
-		if (object instanceof ComplexGateway) {
-			if (direction != GatewayDirection.DIVERGING
-					&& direction != GatewayDirection.CONVERGING) {
-				addStatus(object,"gatewayDirection", //$NON-NLS-1$
-						Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Complex_Converging_Diverging);
+			if (object instanceof ComplexGateway) {
+				if (direction != GatewayDirection.DIVERGING
+						&& direction != GatewayDirection.CONVERGING) {
+					addStatus(object,"gatewayDirection", //$NON-NLS-1$
+							Status.ERROR, org.eclipse.bpmn2.modeler.core.validation.validators.Messages.GatewayValidator_Complex_Converging_Diverging);
+				}
 			}
 		}
 		return getResult();
