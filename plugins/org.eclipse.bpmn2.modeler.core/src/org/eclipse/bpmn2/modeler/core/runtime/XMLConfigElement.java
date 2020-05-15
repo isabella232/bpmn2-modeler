@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IPluginDescriptor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Path;
@@ -261,11 +260,6 @@ public class XMLConfigElement implements IConfigurationElement {
 		public boolean isValid() {
 			// TODO Auto-generated method stub
 			return false;
-		}
-
-		public IPluginDescriptor getDeclaringPluginDescriptor() throws InvalidRegistryObjectException {
-			// TODO Auto-generated method stub
-			return null;
 		}
 		
 	}
