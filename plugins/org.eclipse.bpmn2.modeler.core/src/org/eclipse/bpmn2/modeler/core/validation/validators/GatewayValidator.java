@@ -36,6 +36,8 @@ import org.eclipse.emf.validation.IValidationContext;
  * <li>Unspecified gateways MUST have either multiple incoming, or multiple outgoing connections</li>
  * </ul>
  * 
+ * Issues: #550406
+ * 
  */
 public class GatewayValidator extends AbstractBpmn2ElementValidator<Gateway> {
 
