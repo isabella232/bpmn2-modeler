@@ -13,7 +13,6 @@
 
 package org.eclipse.bpmn2.modeler.core.utils;
 
-import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
@@ -51,17 +50,12 @@ public class ErrorDialog {
 	}
 	
 	public void show() {
-		Thread t = Thread.currentThread();
-//		Display.getDefault().syncExec(new Runnable() {
-//			@Override
-//			public void run() {
-				try {
-					String me = Activator.getDefault().getDescriptor().getLabel();
-					MessageDialog.openError(Display.getDefault().getActiveShell(), me + " - " + title, message); //$NON-NLS-1$
-				}
-				catch (Exception e) {}
-//			}
-//		});
+		try {
+			MessageDialog.openError(Display.getDefault().getActiveShell(), title, message); //$NON-NLS-1$
+		}
+		catch (Exception e) {
+			// no op
+		}
 
 	}
 }
