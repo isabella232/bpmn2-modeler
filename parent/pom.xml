@@ -203,6 +203,33 @@
 			</build>
 		</profile>
 		<profile>
+			<id>platform-2019-06</id>
+			<activation>
+				<property>
+					<name>platform-version-name</name>
+					<value>2019-06</value>
+				</property>
+			</activation>
+			<properties>
+				<eclipse-site>http://download.eclipse.org/releases/2019-06</eclipse-site>
+				<platform-version>[4.8,5.2)</platform-version>
+				<platform-version-name>2019-06</platform-version-name>
+				<eclipse.orbit.url>https://download.eclipse.org/tools/orbit/S-builds/S20200128200239/repository</eclipse.orbit.url>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+					    <groupId>org.eclipse.tycho</groupId>
+					    <artifactId>tycho-surefire-plugin</artifactId>
+					    <version>${tycho-version}</version>
+						<configuration>
+							<useUIThread>false</useUIThread>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<id>sign</id>
 			<build>
 				<plugins>
@@ -295,7 +322,7 @@
 
 		<repository>
 			<id>eclipse-graphiti</id>
-			<url>http://download.eclipse.org/graphiti/updates/milestones/</url>
+			<url>http://download.eclipse.org/graphiti/updates/milestones/S-0.17.0M3-202005151449/</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>
