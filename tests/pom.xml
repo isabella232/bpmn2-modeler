@@ -4,7 +4,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<parent>
 		<groupId>org.eclipse.bpmn2.modeler</groupId>
         <artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.5.2-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
 	</parent>
 
