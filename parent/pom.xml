@@ -230,6 +230,34 @@
 			</build>
 		</profile>
 		<profile>
+			<id>platform-2020-06</id>
+			<activation>
+				<property>
+					<name>platform-version-name</name>
+					<value>2020-06</value>
+				</property>
+			</activation>
+			<properties>
+				<eclipse-site>http://download.eclipse.org/releases/2020-06</eclipse-site>
+				<platform-version>[4.8,5.2)</platform-version>
+				<platform-version-name>2020-06</platform-version-name>
+				<eclipse.orbit.url>https://download.eclipse.org/tools/orbit/S-builds/S20200526004052/repository</eclipse.orbit.url>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+					    <groupId>org.eclipse.tycho</groupId>
+					    <artifactId>tycho-surefire-plugin</artifactId>
+					    <version>${tycho-version}</version>
+						<configuration>
+							<useUIThread>false</useUIThread>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
 			<id>sign</id>
 			<build>
 				<plugins>
@@ -509,6 +537,7 @@
 					</environments>
 					
 					<!-- vvv Remove when Web Tools has a fix for https://bugs.eclipse.org/bugs/show_bug.cgi?id=501445 -->
+					<!-- removed from ralph.soika@imixs.com at 27.05.2020 
 					<dependency-resolution>
 						<extraRequirements>
 							<requirement>
@@ -518,6 +547,7 @@
 							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
+					-->
 					<!-- ^^^ Remove when Web Tools has a fix for https://bugs.eclipse.org/bugs/show_bug.cgi?id=501445 -->
 				</configuration>
 			</plugin>
